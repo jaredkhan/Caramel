@@ -1,4 +1,5 @@
 import BracketStructureParser
+import SwiftShell
 import Regex
 
 /// Represents a node in a Swift abstract syntax tree
@@ -38,6 +39,10 @@ extension ASTNode: Equatable {
 
 /// Parse AST nodes from `swiftc ast-dump`s
 extension ASTNode {
+  public init(filePath: String) throws {
+    let astDump = run("/usr/bin/swiftc", "-dump-ast", filePath).stderror
+    try self.init(string: astDump)
+  }
   public init(string: String) throws {
     let bracketStructure = try BracketStructure(string: string)
     self = try ASTNode(bracketStructure: bracketStructure)
