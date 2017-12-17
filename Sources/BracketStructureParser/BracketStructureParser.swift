@@ -30,7 +30,7 @@ private struct BracketStructureParser {
     }
 
     enum BracketStructureParseError: Error {
-      case invalidStructure
+      case invalidStructure(String)
     }
 
     // This remainder is a substring where the startIndex will approach the endIndex
@@ -46,20 +46,18 @@ private struct BracketStructureParser {
 
     /// Move the startIndex forward past the next structure, returning that structure
     func consumeNextStructure() throws -> BracketStructure {
-      guard !remainder.isEmpty else {
-        throw BracketStructureParseError.invalidStructure
-      }
-
       consumeWhitespace()
+      assert(!remainder.isEmpty)
+      
       if let first = remainder.first {
         switch first { 
           case "(": return try consumeContainer()
-          case ")": throw BracketStructureParseError.invalidStructure
-          case "]": throw BracketStructureParseError.invalidStructure
+          case ")": throw BracketStructureParseError.invalidStructure("Found surplus ) \(remainder)")
+          case "]": throw BracketStructureParseError.invalidStructure("Found surplus ]")
           default: return try consumeText()
         }
       } else {
-        throw BracketStructureParseError.invalidStructure
+        throw BracketStructureParseError.invalidStructure("Trying to consume from empty buffer")
       }
     }
     
@@ -67,6 +65,8 @@ private struct BracketStructureParser {
     /// Throws if it sees a mismatched closing bracket
     func consumeText() throws -> BracketStructure {
       assert(!remainder.isEmpty)
+      assert(remainder.first != "(")
+
       var containerStack: [Container] = []
 
       let startingPoint = remainder.startIndex
@@ -87,8 +87,7 @@ private struct BracketStructureParser {
                 // We've reached an unmatched closing bracket
                 break scanOverText
               } else {
-                // We've reached a mismatched closing bracket
-                throw BracketStructureParseError.invalidStructure
+                throw BracketStructureParseError.invalidStructure("Found mismatched )")
               }
             }
           case "[":
@@ -105,7 +104,7 @@ private struct BracketStructureParser {
                 break scanOverText
               } else {
                 // We've reached a mismatched closing bracket
-                throw BracketStructureParseError.invalidStructure
+                throw BracketStructureParseError.invalidStructure("Found mismatched ]")
               }
             }
           case "\"":
@@ -114,7 +113,7 @@ private struct BracketStructureParser {
               // skip over everything in the quotes
               remainder = remainder[remainder.index(after: nextQuoteIndex) ..< remainder.endIndex]
             } else {
-              throw BracketStructureParseError.invalidStructure
+              throw BracketStructureParseError.invalidStructure("Found mismatched \"")
             }
           case "\'":
             remainder.removeFirst()
@@ -122,7 +121,7 @@ private struct BracketStructureParser {
               // skip over everything in the quotes
               remainder = remainder[remainder.index(after: nextQuoteIndex) ..< remainder.endIndex]
             } else {
-              throw BracketStructureParseError.invalidStructure
+              throw BracketStructureParseError.invalidStructure("Found mismatched \'")
             }
           case " ", "\n", "\t", "\r":
             if containerStack.isEmpty {
@@ -144,15 +143,18 @@ private struct BracketStructureParser {
 
     func consumeContainer() throws -> BracketStructure {
       assert(!remainder.isEmpty)
+      assert(remainder.first == "(")
+      
       remainder.removeFirst() // advance over the opening bracket
       consumeWhitespace()
 
       var children: [BracketStructure] = []
-      // keep going until the next thing is a closing bracket
       while remainder.first != ")" {
         children.append(try consumeNextStructure())
+        consumeWhitespace()
       }
 
+      assert(remainder.first == ")")
       remainder.removeFirst() // advance over the closing bracket
       return .container(children)
     }

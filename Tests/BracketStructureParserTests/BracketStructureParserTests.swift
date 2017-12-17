@@ -114,11 +114,32 @@ class BracketStructureParserTests: XCTestCase {
       )
     }
 
+    func testNewLineBeforeClosingBracket() {
+      XCTAssertEqual(
+        try BracketStructure(string: """
+          (top_level_code_decl
+            (brace_stmt
+              (pattern_binding_decl)
+          ))
+        """),
+        BracketStructure.container([
+          .text("top_level_code_decl"),
+          .container([
+            .text("brace_stmt"),
+            .container([
+              .text("pattern_binding_decl")
+            ])
+          ])
+        ])
+      )
+    }
+
     static var allTests = [
       ("testSimpleNoQuotes", testSimpleNoQuotes),
       ("testSimpleWithQuotes", testSimpleWithQuotes),
       ("testAST", testAST),
       ("testEmpty", testEmpty),
-      ("testInvalid", testInvalid)
+      ("testInvalid", testInvalid),
+      ("testNewLineBeforeClosingBracket", testNewLineBeforeClosingBracket)
     ]
 }
