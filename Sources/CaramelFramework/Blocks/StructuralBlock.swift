@@ -3,8 +3,6 @@ import SourceKittenFramework
 public protocol StructuralBlock: Block {
   // What do I want to define on structural block?
   // var description
-  // func getCFG()
-  // func getFirstBlock()
 }
 
 public enum StructuralBlockError: Swift.Error {

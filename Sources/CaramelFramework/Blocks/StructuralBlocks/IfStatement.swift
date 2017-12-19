@@ -3,7 +3,7 @@ import SourceKittenFramework
 class IfStatement: StructuralBlock {
   let offset: Int64
   let length: Int64
-  let conditionBlock: Block // elements > source.lang.swift.structure.elem.condition_expr
+  let conditionBlock: BasicBlock // elements > source.lang.swift.structure.elem.condition_expr
   let thenBlock: BlockSequence // substructure[0]
   let elseBlock: BlockSequence? // substructure[1]
 
@@ -12,6 +12,29 @@ class IfStatement: StructuralBlock {
     case missingThenBlock
     case missingLocation
   }
+
+  public func getCFG() -> CFG {
+    let thenCFG = thenBlock.getCFG()
+    let elseCFG = elseBlock?.getCFG()
+
+    // If statement has no context it can pass down
+
+    var conditionBlockOutgoings = [thenCFG.entryPoint]
+    if let elseEntry = elseCFG?.entryPoint {
+      conditionBlockOutgoings.append(elseEntry)
+    }
+
+    let partialCFG = CFG(
+      nodes: [conditionBlock],
+      edges: [
+        conditionBlock: conditionBlockOutgoings
+      ],
+      entryPoint: .basicBlock(conditionBlock)
+    )
+
+    return partialCFG.merging(with: [thenCFG, elseCFG].flatMap({ $0 }))
+  }
+
   init(dict: [String: SourceKitRepresentable]) throws {
     // Get location
     guard

@@ -1,20 +1,43 @@
 /// Control Flow Graph
 // Nodes are basic blocks
 // Edges are directed and point to possible next blocks
-struct CFG {
+public struct CFG {
   let nodes: Set<BasicBlock>
   var edges: [BasicBlock: [NextBlock]]
-  let entryPoint: BasicBlock
+  var entryPoint: NextBlock
 
   // Resolve NextBlocks to other NextBlocks
   // e.g. resolving a .passiveNext to a basicBlock
   // e.g. resolving a .breakStatement to a .passiveNext
-  mutating func applying(context: [NextBlock: NextBlock]) {
+  mutating func apply(context: [NextBlock: NextBlock?]) {
     edges = edges.mapValues { nextBlocks in
-      nextBlocks.map { nextBlock in
+      nextBlocks.flatMap { nextBlock in
         context[nextBlock] ?? nextBlock
       }
     }
+    entryPoint = (context[entryPoint] ?? entryPoint) ?? entryPoint
+  }
+
+  func applying(context: [NextBlock: NextBlock?]) -> CFG {
+    var result = self
+    result.apply(context: context)
+    return result
+  }
+
+  /// Pulls in all the nodes and edges of the given CFGs
+  /// Useful for combining subgraphs into a larger graph
+  func merging(with otherCFGs: CFG...) -> CFG {
+    return self.merging(with: otherCFGs)
+  }
+
+  func merging(with otherCFGs: [CFG]) -> CFG {
+    let mergedNodes = otherCFGs.reduce(self.nodes, { $0.union($1.nodes) })
+    let mergedEdges = otherCFGs.reduce(self.edges, { $0.merging($1.edges, uniquingKeysWith: +) })
+    return CFG(
+      nodes: mergedNodes,
+      edges: mergedEdges,
+      entryPoint: entryPoint
+    )
   }
 }
 
@@ -30,6 +53,7 @@ enum NextBlock {
   case labelledContinueStatement(String)
   case returnStatement
   case throwStatement
+  case nextCase
 }
 
 extension NextBlock: Hashable {
@@ -44,6 +68,7 @@ extension NextBlock: Hashable {
       case (.labelledContinueStatement(let llabel), .labelledContinueStatement(let rlabel)): return llabel == rlabel
       case (.returnStatement, .returnStatement): return true
       case (.throwStatement, .throwStatement): return true
+      case (.nextCase, .nextCase): return true
       default: return false
     }
   }
@@ -59,6 +84,7 @@ extension NextBlock: Hashable {
       case .labelledContinueStatement(let str): return str.hashValue
       case .returnStatement: return 8
       case .throwStatement: return 9
+      case .nextCase: return 10
     }
   }
 }

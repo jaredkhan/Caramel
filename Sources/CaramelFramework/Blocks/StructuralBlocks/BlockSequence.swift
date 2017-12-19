@@ -10,6 +10,47 @@ class BlockSequence: StructuralBlock {
     case missingLocation
   }
 
+  public func getCFG() -> CFG {
+    if blocks.isEmpty {
+      // Return a filler block so that we can demo this
+      // TODO: Tear this out and go straight for the passiveNext
+      let fillerBlock = BasicBlock(
+        offset: offset,
+        length: length,
+        type: .fillerBlock
+      )
+
+      return CFG(
+        nodes: [fillerBlock],
+        edges: [fillerBlock: [.passiveNext]],
+        entryPoint: .basicBlock(fillerBlock)
+      )
+    }
+
+    let blockCFGs = blocks.map { $0.getCFG() }
+
+    var resolvedBlockCFGs: [CFG] = []
+
+    // Go in reverse order because each one here relies on the following one being resolved
+    for cfg in blockCFGs.reversed() {
+      if let nextCFG = resolvedBlockCFGs.first {
+        var cfg = cfg
+        cfg.apply(context: [.passiveNext: nextCFG.entryPoint])
+        resolvedBlockCFGs = [cfg] + resolvedBlockCFGs
+      } else {
+        resolvedBlockCFGs = [cfg] + resolvedBlockCFGs
+      }
+    }
+
+    let partialCFG = CFG(
+      nodes: [],
+      edges: [:],
+      entryPoint: resolvedBlockCFGs.first?.entryPoint ?? .passiveNext
+    )
+
+    return partialCFG.merging(with: blockCFGs)
+  }
+
   /// Take a dictionary representing a brace object
   init(braceDict: [String: SourceKitRepresentable]) throws {
     // Get position

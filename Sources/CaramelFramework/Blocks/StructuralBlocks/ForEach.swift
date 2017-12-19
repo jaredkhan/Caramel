@@ -3,7 +3,7 @@ import SourceKittenFramework
 class ForEach: StructuralBlock {
   let offset: Int64
   let length: Int64
-  let id: Block // elements > source.lang.swift.structure.elem.id
+  let id: BasicBlock // elements > source.lang.swift.structure.elem.id
   let sequence: Block // elements > source.lang.swift.structure.elem.expr
   let body: BlockSequence // substructure > source.lang.swift.stmt.brace
 
@@ -13,6 +13,28 @@ class ForEach: StructuralBlock {
     case missingId
     case missingSequence
     case missingBody
+  }
+
+  public func getCFG() -> CFG {
+    let bodyCFG = body.getCFG()
+
+    // Evaluate sequence first
+    let sequenceCFG = sequence.getCFG().applying(context: [.passiveNext: .basicBlock(id)])
+
+    // From id, could either enter block if there are remaining elements,
+    // or go to passiveNext
+    let partialCFG = CFG(
+      nodes: [id],
+      edges: [
+        id: [
+          bodyCFG.entryPoint,
+          .passiveNext
+        ]
+      ],
+      entryPoint: sequenceCFG.entryPoint
+    )
+
+    return partialCFG.merging(with: bodyCFG, sequenceCFG)
   }
 
   init(dict: [String: SourceKitRepresentable]) throws {

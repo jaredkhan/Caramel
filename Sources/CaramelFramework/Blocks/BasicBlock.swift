@@ -8,6 +8,18 @@ class BasicBlock: Block {
     self.length = length
     self.type = type
   }
+
+  // If we are getting the CFG of a BasicBlock directly,
+  // then we just want a wrapper that has this basic block as an entry point and moves on
+  // TODO: Implement guard, break etc.
+  func getCFG() -> CFG {
+    return CFG(
+      nodes: [self],
+      edges: [self: [.passiveNext]],
+      entryPoint: .basicBlock(self)
+    )
+  }
+
   // /// Lists all the symbols that are defined in this block
   // func definitions() -> [USR]
 
@@ -54,4 +66,7 @@ enum BasicBlockType {
 
   case throwStatement
   case expression
+
+  /// Just here until we get the real expressions in
+  case fillerBlock
 }

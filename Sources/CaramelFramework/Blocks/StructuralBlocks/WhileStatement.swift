@@ -3,13 +3,36 @@ import SourceKittenFramework
 class WhileStatement: StructuralBlock {
   let offset: Int64
   let length: Int64
-  let conditionBlock: Block // elements > source.lang.swift.structure.elem.condition_expr
+  let conditionBlock: BasicBlock // elements > source.lang.swift.structure.elem.condition_expr
   let body: Block // substructure > source.lang.swift.stmt.brace
 
   enum Error: Swift.Error {
     case missingCondition
     case missingBody
     case missingLocation
+  }
+
+  public func getCFG() -> CFG {
+    let bodyCFG = body.getCFG().applying(context: [
+      .passiveNext: .basicBlock(conditionBlock),
+      .continueStatement: .basicBlock(conditionBlock),
+      .breakStatement: .passiveNext
+    ])
+
+    // If statement has no context it can pass down
+
+    let partialCFG = CFG(
+      nodes: [conditionBlock],
+      edges: [
+        conditionBlock: [
+          bodyCFG.entryPoint,
+          .passiveNext
+        ]
+        ],
+      entryPoint: .basicBlock(conditionBlock)
+    )
+
+    return partialCFG.merging(with: bodyCFG)
   }
 
   init(dict: [String: SourceKitRepresentable]) throws {

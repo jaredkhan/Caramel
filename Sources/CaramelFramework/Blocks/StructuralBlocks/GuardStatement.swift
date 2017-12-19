@@ -3,13 +3,32 @@ import SourceKittenFramework
 class GuardStatement: StructuralBlock {
   let offset: Int64
   let length: Int64
-  let conditionBlock: Block
+  let conditionBlock: BasicBlock
   let elseBlock: Block
   
   enum Error: Swift.Error {
     case missingCondition
     case missingElseBlock
     case missingLocation
+  }
+
+  public func getCFG() -> CFG {
+    let elseCFG = elseBlock.getCFG()
+
+    // If statement has no context it can pass down
+
+    let partialCFG = CFG(
+      nodes: [conditionBlock],
+      edges: [
+        conditionBlock: [
+          .passiveNext,
+          elseCFG.entryPoint
+        ],
+      ],
+      entryPoint: .basicBlock(conditionBlock)
+    )
+
+    return partialCFG.merging(with: elseCFG)
   }
 
   init(dict: [String: SourceKitRepresentable]) throws {

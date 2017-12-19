@@ -5,12 +5,15 @@ class Function: StructuralBlock {
   let length: Int64
   let parameters: [Block] // substructure > source.lang.swift.decl.var.parameter
   let body: Block // substructure > !source.lang.swift.decl.var.parameter
-
   
   enum Error: Swift.Error {
     case missingLocation
     case missingSubstructure
     case missingBody
+  }
+
+  public func getCFG() -> CFG {
+    return body.getCFG()
   }
 
   init(dict: [String: SourceKitRepresentable]) throws {

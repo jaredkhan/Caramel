@@ -3,13 +3,36 @@ import SourceKittenFramework
 class RepeatWhileStatement: StructuralBlock {
   let offset: Int64
   let length: Int64
-  let conditionBlock: Block // elements > source.lang.swift.structure.elem.expr
+  let conditionBlock: BasicBlock // elements > source.lang.swift.structure.elem.expr
   let body: BlockSequence // substructure  > source.lang.swift.stmt.brace
   
   enum Error: Swift.Error {
     case missingCondition
     case missingBody
     case missingLocation
+  }
+
+  public func getCFG() -> CFG {
+    let bodyCFG = body.getCFG().applying(context: [
+      .passiveNext: .basicBlock(conditionBlock),
+      .continueStatement: .basicBlock(conditionBlock),
+      .breakStatement: .passiveNext
+    ])
+
+    // If statement has no context it can pass down
+
+    let partialCFG = CFG(
+      nodes: [conditionBlock],
+      edges: [
+        conditionBlock: [
+          bodyCFG.entryPoint,
+          .passiveNext
+        ]
+      ],
+      entryPoint: bodyCFG.entryPoint
+    )
+
+    return partialCFG.merging(with: bodyCFG)
   }
 
   init(dict: [String: SourceKitRepresentable]) throws {

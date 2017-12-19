@@ -11,6 +11,35 @@ class CaseStatement: StructuralBlock {
     case missingPattern
   }
 
+  public func getCFG() -> CFG {
+    assert(patterns.count >= 1)
+
+    let bodyCFG = body.getCFG()
+
+    var edges: [BasicBlock: [NextBlock]] = [:]
+    for (index, pattern) in patterns.enumerated() {
+      var nextBlocks: [NextBlock] = []
+      // If has successor, point to it
+      if patterns.count > index + 1 {
+        nextBlocks.append(.basicBlock(patterns[index + 1]))
+      } else {
+        nextBlocks.append(.nextCase)
+      }
+      // Point to the body entryPoint
+      nextBlocks.append(bodyCFG.entryPoint)
+
+      edges[pattern] = nextBlocks
+    }
+
+    let partialCFG = CFG(
+      nodes: Set(patterns),
+      edges: edges,
+      entryPoint: .basicBlock(patterns[0])
+    )
+
+    return partialCFG.merging(with: bodyCFG)
+  }
+
   init(dict: [String: SourceKitRepresentable]) throws {
     // Get location
     guard
