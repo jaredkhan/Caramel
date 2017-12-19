@@ -1,7 +1,13 @@
-struct BasicBlock: Block {
+class BasicBlock: Block {
   let offset: Int64
   let length: Int64
   let type: BasicBlockType
+
+  init(offset: Int64, length: Int64, type: BasicBlockType) {
+    self.offset = offset
+    self.length = length
+    self.type = type
+  }
   // /// Lists all the symbols that are defined in this block
   // func definitions() -> [USR]
 
@@ -9,7 +15,20 @@ struct BasicBlock: Block {
   // func references() -> [USR]
 }
 
+extension BasicBlock: Hashable {
+  public static func == (lhs: BasicBlock, rhs: BasicBlock) -> Bool {
+    return (lhs.offset, lhs.length, lhs.type) == (rhs.offset, rhs.length, rhs.type)
+  }
+
+  public var hashValue: Int {
+    return Int(offset) ^ Int(length) ^ type.hashValue
+  }
+}
+
 enum BasicBlockType {
+  /// Synthesized start block for the CFG
+  case start
+
   case ifCondition
 
   case whileCondition
