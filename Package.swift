@@ -13,10 +13,6 @@ let package = Package(
         .library(
             name: "CaramelFramework",
             targets: ["CaramelFramework"]
-        ),
-        .library(
-            name: "BracketStructureParser",
-            targets: ["BracketStructureParser"]
         )
     ],
     dependencies: [
@@ -34,14 +30,6 @@ let package = Package(
         .target(
             name: "CaramelFramework",
             dependencies: ["BracketStructureParser", "Regex", "SwiftShell", "SourceKittenFramework"]
-        ),
-        .target(
-            name: "BracketStructureParser",
-            dependencies: []
-        ),
-        .testTarget(
-            name: "BracketStructureParserTests",
-            dependencies: ["BracketStructureParser"]
         ),
         .testTarget(
             name: "CaramelFrameworkTests",
