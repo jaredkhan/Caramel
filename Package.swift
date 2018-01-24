@@ -29,7 +29,7 @@ let package = Package(
         ),
         .target(
             name: "CaramelFramework",
-            dependencies: ["BracketStructureParser", "Regex", "SwiftShell", "SourceKittenFramework"]
+            dependencies: ["Regex", "SwiftShell", "SourceKittenFramework"]
         ),
         .testTarget(
             name: "CaramelFrameworkTests",
