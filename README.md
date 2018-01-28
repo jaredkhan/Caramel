@@ -6,7 +6,7 @@ A [program dependence graph](https://en.wikipedia.org/wiki/Program_Dependence_Gr
 **This project is a work in progress from Oct 2017 - May 2018**
 
 - [x] Parse data from `-ast-dump`
-- [ ] Implement a CFG
+- [x] Implement a CFG
 - [ ] Implement a PDG
 - [ ] Implement slicing algorithm over PDG
 - [ ] Write usage docs

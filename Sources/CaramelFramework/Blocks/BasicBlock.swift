@@ -1,11 +1,11 @@
-class BasicBlock: Block {
-  let offset: Int64
-  let length: Int64
+import Source
+
+public class BasicBlock {
+  let range: SourceRange
   let type: BasicBlockType
 
-  init(offset: Int64, length: Int64, type: BasicBlockType) {
-    self.offset = offset
-    self.length = length
+  init(range: SourceRange, type: BasicBlockType) {
+    self.range = range
     self.type = type
   }
 
@@ -29,11 +29,11 @@ class BasicBlock: Block {
 
 extension BasicBlock: Hashable {
   public static func == (lhs: BasicBlock, rhs: BasicBlock) -> Bool {
-    return (lhs.offset, lhs.length, lhs.type) == (rhs.offset, rhs.length, rhs.type)
+    return (lhs.range, lhs.type) == (rhs.range, rhs.type)
   }
 
   public var hashValue: Int {
-    return Int(offset) ^ Int(length) ^ type.hashValue
+    return range.hashValue ^ type.hashValue
   }
 }
 
