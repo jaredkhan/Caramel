@@ -53,11 +53,16 @@ public struct CFG: Equatable {
     entryPoint: .passiveNext
   )
 
+  public static func edgesMatch(_ lhs: CFG, _ rhs: CFG) -> Bool {
+    if lhs.edges.count != rhs.edges.count { return false }
+    for key in lhs.edges.keys {
+      if lhs.edges[key] != rhs.edges[key] { return false }
+    }
+    return true
+  }
+
   public static func ==(lhs: CFG, rhs: CFG) -> Bool {
-    let edgesMatch = zip(lhs.edges, rhs.edges).reduce(true, { accumulator, pair in
-      return accumulator && pair.0.key == pair.1.key && pair.0.value == pair.1.value
-    })
-    return lhs.nodes == rhs.nodes && edgesMatch && lhs.entryPoint == rhs.entryPoint
+    return lhs.nodes == rhs.nodes && edgesMatch(lhs, rhs) && lhs.entryPoint == rhs.entryPoint
   }
 }
 
@@ -104,6 +109,8 @@ public enum NextBlock {
   case nextCase
   case conditionHold
   case conditionFail
+  case patternMatch
+  case patternNotMatch
 }
 
 extension NextBlock: Equatable, Hashable {
@@ -121,6 +128,8 @@ extension NextBlock: Equatable, Hashable {
       case (.nextCase, .nextCase): return true
       case (.conditionHold, .conditionHold): return true
       case (.conditionFail, .conditionFail): return true
+      case (.patternMatch, .patternMatch): return true
+      case (.patternNotMatch, .patternNotMatch): return true
       default: return false
     }
   }
@@ -139,6 +148,8 @@ extension NextBlock: Equatable, Hashable {
       case .nextCase: return 10
       case .conditionHold: return 11
       case .conditionFail: return 12
+      case .patternMatch: return 13
+      case .patternNotMatch: return 14
     }
   }
 }

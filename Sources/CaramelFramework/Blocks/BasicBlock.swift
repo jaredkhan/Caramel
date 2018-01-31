@@ -40,30 +40,14 @@ extension BasicBlock: Hashable {
 enum BasicBlockType {
   /// Synthesized start block for the CFG
   case start
-
-  case ifCondition
-
-  case whileCondition
-
-  case guardCondition
-
+  case condition
   case breakStatement
-
   case continueStatement
-
   case fallthroughStatement
-
-  case forInSequence
-  case forInId
-
-  case switchSubject
-  case switchCasePattern
-
+  case pattern
   case repeatWhileCondition
-
   case functionParameter
   case functionReturnStatement
-
   case throwStatement
   case expression
 

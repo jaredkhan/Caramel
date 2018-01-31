@@ -90,8 +90,18 @@ func getCFG(_ stmt: Statement) -> CFG {
       // - Resolve any `break` or `continue` appropriately
       // - When reach the end of the block, go back to the pattern
       let collectionCFG = getCFG(n.collection)
-      let patternCFG = getCFG(n.item.matchingPattern)
-      let bodyCFG = getCFG(n.codeBlock)
+      var bodyCFG = getCFG(n.codeBlock).applying(context: [
+        .breakStatement: .passiveNext,
+      ])
+      let patternCFG = getCFG(n.item.matchingPattern).applying(context: [
+        .patternMatch: bodyCFG.entryPoint,
+        .patternNotMatch: .passiveNext
+      ])
+
+      bodyCFG = bodyCFG.applying(context: [
+        .continueStatement: patternCFG.entryPoint
+      ])
+
       return collectionCFG.applying(
         context: [
           .passiveNext: patternCFG.entryPoint
@@ -102,8 +112,10 @@ func getCFG(_ stmt: Statement) -> CFG {
       // - Evaluate each condition in turn
       // - If encounter a condition that does not hold, enter else block immediately
       // - Otherwise continue
-      // TODO: What exit mechanisms can a guard use?
-      let elseCFG = getCFG(n.codeBlock)
+      let elseCFG = getCFG(n.codeBlock).applying(context: [
+        .passiveNext: nil // You cannot leave a guards else condition
+        // TODO: What exit mechanisms can a guard use?
+      ])
       let conditionChainCFG = getCFG(n.conditionList)
 
       return conditionChainCFG.applying(context: [
@@ -122,7 +134,9 @@ func getCFG(_ stmt: Statement) -> CFG {
       return conditionChainCFG.applying(context: [
         .conditionHold: bodyCFG.entryPoint,
         .conditionFail: elseCFG.entryPoint
-      ]).merging(with: bodyCFG, elseCFG)
+      ]).merging(with: bodyCFG, elseCFG).applying(context: [
+        .breakStatement: .passiveNext
+      ])
     case let n as RepeatWhileStatement: 
       // The control flow of a repeat while statement is as follows: 
       // - Execute the body
@@ -130,50 +144,80 @@ func getCFG(_ stmt: Statement) -> CFG {
       // - Route condition failure to passiveNext
       // - Route condition success back to body
 
-      let conditionExpressionNode = getNode(n.conditionExpression)
+      let conditionCFG = getCFG(
+        Condition.expression(n.conditionExpression)
+      )
 
       let bodyCFG = getCFG(n.codeBlock).applying(context: [
-        .passiveNext: .basicBlock(conditionExpressionNode),
-        .continueStatement: .basicBlock(conditionExpressionNode),
+        .passiveNext: conditionCFG.entryPoint,
+        .continueStatement: conditionCFG.entryPoint,
         .breakStatement: .passiveNext
       ])
 
-      return CFG(
-        nodes: [conditionExpressionNode],
-        edges: [
-          conditionExpressionNode: [
-            // condition either leads to body or passivenext
-            bodyCFG.entryPoint,
-            .passiveNext
-          ]
-        ],
-        entryPoint: bodyCFG.entryPoint
-      ).merging(with: bodyCFG)
+      return bodyCFG.merging(with: conditionCFG.applying(context: [
+        .conditionHold: bodyCFG.entryPoint,
+        .conditionFail: .passiveNext
+      ]))
     case let n as SwitchStatement: 
       let subject = getNode(n.expression)
-      var caseCFGs: [CFG] = []
       
-      for caseStatement in n.cases.reversed() {
-        caseCFGs.append(getCFG(caseStatement).applying(context: [
-          // For each case, if it's not the last then point it to the next one
-          // Remove the nextCase edge from the final case cfg
-          // because if we enter the final case, by Swift semantics, it cannot fail
-          // Not every case can fail so shold never propagate a nextCase to a passiveNext
-          .nextCase: caseCFGs.last?.entryPoint
-        ]))
+      // get pattern chains and bodies
+      var cases = n.cases.map {(
+        patternChainCFG: getPatternChainCFG($0),
+        bodyCFG: getBodyCFG($0)
+      )}
+
+      for index in stride(from: cases.count - 1, through: 0, by: -1) {
+        // Resolve pattern matches
+        cases[index].patternChainCFG.apply(context: [
+          .patternMatch: cases[index].bodyCFG.entryPoint,
+          .patternNotMatch: (index + 1 < cases.count) ?
+            cases[index + 1].patternChainCFG.entryPoint :
+            nil // Switches are exhaustive, this case should never be hit
+        ])
+
+        // Resolve fallthroughs
+        cases[index].bodyCFG.apply(context: [
+          // Propagate fallthroughs in the last case
+          .switchFallthrough: (index + 1 < cases.count) ?
+            cases[index + 1].bodyCFG.entryPoint : .switchFallthrough
+        ])
       }
 
-      let partialCFG = CFG(
+      return CFG(
         nodes: [subject],
         edges: [
-          subject: [
-            caseCFGs.first?.entryPoint ?? .passiveNext
-          ]
+          subject: [cases[0].patternChainCFG.entryPoint]
         ],
         entryPoint: .basicBlock(subject)
-      )
+      ).merging(with: cases.map { $0.patternChainCFG } + cases.map { $0.bodyCFG } )
 
-      return partialCFG.merging(with: caseCFGs)
+
+      // // get bodies
+
+      // // custom chaining 
+
+      // for caseStatement in n.cases.reversed() {
+      //   caseCFGs.append(getCFG(caseStatement).applying(context: [
+      //     // For each case, if it's not the last then point it to the next one
+      //     // Remove the nextCase edge from the final case cfg
+      //     // because if we enter the final case, by Swift semantics, it cannot fail
+      //     // Not every case can fail so shold never propagate a nextCase to a passiveNext
+      //     .nextCase: caseCFGs.last?.entryPoint
+      //   ]))
+      // }
+
+      // let partialCFG = CFG(
+      //   nodes: [subject],
+      //   edges: [
+      //     subject: [
+      //       caseCFGs.first?.entryPoint ?? .passiveNext
+      //     ]
+      //   ],
+      //   entryPoint: .basicBlock(subject)
+      // )
+
+      // return partialCFG.merging(with: caseCFGs)
     case let n as WhileStatement: 
       let conditionListCFG = getCFG(n.conditionList)
 
@@ -246,14 +290,25 @@ func getCFG(_ elseClause: IfStatement.ElseClause) -> CFG {
 
 /// 
 func getCFG(_ pattern: Pattern) -> CFG {
-  return CFG.empty
+  let node = BasicBlock(
+    range: pattern.sourceRange,
+    type: .pattern
+  )
+  return CFG(
+    nodes: [node],
+    edges: [
+      node: [.patternMatch, .patternNotMatch]
+    ],
+    entryPoint: .basicBlock(node)
+  )
 }
+
 func getCFG(_ cond: Condition) -> CFG {
   switch cond {
     case .expression(let e):
       let node = BasicBlock(
         range: e.sourceRange,
-        type: .ifCondition
+        type: .condition
       )
       return CFG(
         nodes: [node],
@@ -281,6 +336,83 @@ func getCFG(_ conds: [Condition]) -> CFG {
     }
   )
 }
-func getCFG(_ switchCase: SwitchStatement.Case) -> CFG {
-  return CFG.empty
+
+func getPatternChainCFG(_ switchCase: SwitchStatement.Case) -> CFG {
+  switch switchCase {
+  case .`case`(let items, _):
+    for item in items {
+      if item.whereExpression != nil {
+        fatalError("where expression in switch patterns are not supported")
+      }
+    }
+
+    return CFG(
+      chainingCFGs: items.map { getCFG($0.pattern) },
+      withContext: { currentPattern, nextPattern in 
+        [
+          // If there is another pattern then chain to that one,
+          // otherwise it's a non-match
+          .patternNotMatch: nextPattern?.entryPoint ?? .patternNotMatch
+        ]
+      }
+    )
+  case .`default`(_):
+    // Everything matches the default case
+    return CFG(
+      nodes: [],
+      edges: [:],
+      entryPoint: .patternMatch
+    )
+  }
 }
+
+func getBodyCFG(_ switchCase: SwitchStatement.Case) -> CFG {
+  let statements: [Statement]
+  switch switchCase {
+    case .`case`(_, let foundStatements): 
+      statements = foundStatements
+    case .`default`(let foundStatements):
+      statements = foundStatements
+  }
+
+  return getCFG(statements).applying(context: [
+    .breakStatement: .passiveNext
+  ])
+}
+ 
+// func getCFG(_ switchCase: SwitchStatement.Case) -> CFG {
+//   switch switchCase {
+//   case .`case`(let items, let statements):
+//     for item in items {
+//       if item.whereExpression != nil {
+//         fatalError("where expression in switch patterns are not supported")
+//       }
+//     }
+
+//     let bodyCFG = getCFG(statements).applying(context: [
+//       .switchFallthrough: .nextCase,
+//       .breakStatement: .passiveNext
+//     ])
+
+//     let patternChain = CFG(
+//       chainingCFGs: items.map { getCFG($0.pattern) },
+//       withContext: { currentCfg, nextCfg in 
+//         [
+//           // If there is another pattern then chain to that one,
+//           // otherwise it's a non-match
+//           .patternNotMatch: nextCfg?.entryPoint ?? .nextCase,
+//           .patternMatch: bodyCFG.entryPoint
+//         ]
+//       }
+//     )
+
+//     return patternChain.merging(with: bodyCFG)
+//   case .`default`(let statements):
+//     let bodyCFG = getCFG(statements).applying(context: [
+//       .switchFallthrough: .passiveNext,
+//       .breakStatement: .passiveNext
+//     ])
+
+//     return bodyCFG
+//   }
+// }
