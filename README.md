@@ -1,5 +1,7 @@
 # Caramel
 
+[![Build Status](https://travis-ci.org/jaredkhan/Caramel.svg?branch=master)](https://travis-ci.org/jaredkhan/Caramel)
+
 A [program dependence graph](https://en.wikipedia.org/wiki/Program_Dependence_Graph) and [program slicer](https://en.wikipedia.org/wiki/Program_slicing) for the Swift programming language.
 
 ---
