@@ -50,7 +50,4 @@ enum BasicBlockType {
   case functionReturnStatement
   case throwStatement
   case expression
-
-  /// Just here until we get the real expressions in
-  case fillerBlock
 }
