@@ -191,33 +191,6 @@ func getCFG(_ stmt: Statement) -> CFG {
         ],
         entryPoint: .basicBlock(subject)
       ).merging(with: cases.map { $0.patternChainCFG } + cases.map { $0.bodyCFG } )
-
-
-      // // get bodies
-
-      // // custom chaining 
-
-      // for caseStatement in n.cases.reversed() {
-      //   caseCFGs.append(getCFG(caseStatement).applying(context: [
-      //     // For each case, if it's not the last then point it to the next one
-      //     // Remove the nextCase edge from the final case cfg
-      //     // because if we enter the final case, by Swift semantics, it cannot fail
-      //     // Not every case can fail so shold never propagate a nextCase to a passiveNext
-      //     .nextCase: caseCFGs.last?.entryPoint
-      //   ]))
-      // }
-
-      // let partialCFG = CFG(
-      //   nodes: [subject],
-      //   edges: [
-      //     subject: [
-      //       caseCFGs.first?.entryPoint ?? .passiveNext
-      //     ]
-      //   ],
-      //   entryPoint: .basicBlock(subject)
-      // )
-
-      // return partialCFG.merging(with: caseCFGs)
     case let n as WhileStatement: 
       let conditionListCFG = getCFG(n.conditionList)
 
@@ -379,40 +352,3 @@ func getBodyCFG(_ switchCase: SwitchStatement.Case) -> CFG {
     .breakStatement: .passiveNext
   ])
 }
- 
-// func getCFG(_ switchCase: SwitchStatement.Case) -> CFG {
-//   switch switchCase {
-//   case .`case`(let items, let statements):
-//     for item in items {
-//       if item.whereExpression != nil {
-//         fatalError("where expression in switch patterns are not supported")
-//       }
-//     }
-
-//     let bodyCFG = getCFG(statements).applying(context: [
-//       .switchFallthrough: .nextCase,
-//       .breakStatement: .passiveNext
-//     ])
-
-//     let patternChain = CFG(
-//       chainingCFGs: items.map { getCFG($0.pattern) },
-//       withContext: { currentCfg, nextCfg in 
-//         [
-//           // If there is another pattern then chain to that one,
-//           // otherwise it's a non-match
-//           .patternNotMatch: nextCfg?.entryPoint ?? .nextCase,
-//           .patternMatch: bodyCFG.entryPoint
-//         ]
-//       }
-//     )
-
-//     return patternChain.merging(with: bodyCFG)
-//   case .`default`(let statements):
-//     let bodyCFG = getCFG(statements).applying(context: [
-//       .switchFallthrough: .passiveNext,
-//       .breakStatement: .passiveNext
-//     ])
-
-//     return bodyCFG
-//   }
-// }
