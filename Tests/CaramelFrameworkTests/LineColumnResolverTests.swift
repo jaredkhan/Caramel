@@ -81,8 +81,21 @@ class LineColumnResolverTests: XCTestCase {
     XCTAssertThrowsError(try manyLinesResolver.resolve(line: 10, column: 13))
   }
 
+  func testStaticApi() {
+    let manyLinesPath = "Resources/LineColumnResolverTestFiles/manyLines.txt"
+    XCTAssertEqual(
+      try! LineColumnResolver.resolve(
+        line: 4,
+        column: 1,
+        filePath: manyLinesPath
+      ),
+      49
+    )
+  }
+
   static var allTests = [
     ("testLineColIndex", testLineColIndex),
-    ("testLineColResolution", testLineColResolution)
+    ("testLineColResolution", testLineColResolution),
+    ("testStaticApi", testStaticApi)
   ]
 }
