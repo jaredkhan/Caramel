@@ -1,0 +1,17 @@
+var myVar = 0
+
+let (patternl, patternr) = (3, 2)
+
+myVar = myVar + 1
+
+if true {
+  print("hello")
+  myVar = 2
+  let x = 2
+} else if true {
+  print("goodbye")
+} else if true, true, true {
+  print("Woah!")
+}
+
+\n test
