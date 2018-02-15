@@ -1,4 +1,7 @@
 import Source
+import SourceKittenFramework
+
+public typealias USR = String
 
 public class BasicBlock {
   let range: SourceRange
@@ -20,11 +23,73 @@ public class BasicBlock {
     )
   }
 
-  // /// Lists all the symbols that are defined in this block
-  // func definitions() -> [USR]
+  /// Lists all the symbols that are defined in this block
+  public func definitions() -> Set<USR> {
+    guard self.type != .start else {
+      return Set<USR>()
+    }
 
-  // /// Lists all the symbols that are referred to in this block
-  // func references() -> [USR]
+    let filePath = range.start.identifier
+    let startOffset = try! range.start.offset()
+    let endOffset = try! range.end.offset()
+
+    var references = Set<USR>()
+
+    for offset in startOffset ..< endOffset {
+      let cursorInfo: [String: SourceKitRepresentable] = Request.cursorInfo(
+        file: filePath,
+        offset: Int64(offset),
+        arguments: [filePath]
+      ).send()
+      if let kind = cursorInfo["key.kind"] as? String,
+        kind.contains("swift.decl"),
+        let usr = cursorInfo["key.usr"] as? String {
+          references.insert(usr)
+      }
+    }
+
+    return references
+  }
+
+  /// Lists all the symbols that are referred to in this block
+  public func references() -> Set<USR> {
+    guard self.type != .start else {
+      return Set<USR>()
+    }
+
+    let filePath = range.start.identifier
+    let startOffset = try! range.start.offset()
+    let endOffset = try! range.end.offset()
+
+    var references = Set<USR>()
+
+    for offset in startOffset ..< endOffset {
+      let cursorInfo: [String: SourceKitRepresentable] = Request.cursorInfo(
+        file: filePath,
+        offset: Int64(offset),
+        arguments: [filePath]
+      ).send()
+      if let kind = cursorInfo["key.kind"] as? String,
+        kind.contains("swift.ref"),
+        let usr = cursorInfo["key.usr"] as? String {
+          references.insert(usr)
+      }
+    }
+
+    return references
+  }
+
+  public func getCursorInfo(filePath: String, offset: Int64) -> [String: SourceKitRepresentable] {
+  let req = Request.cursorInfo(file: filePath, offset: offset, arguments: [filePath])
+  print(req.description)
+  return req.send()
+}
+
+public func getRefUSR(filePath: String, offset: Int64) -> String? {
+  let cursorInfo = getCursorInfo(filePath: filePath, offset: offset)
+  let usr = cursorInfo["key.usr"] as? String
+  return usr
+}
 }
 
 extension BasicBlock: Hashable {

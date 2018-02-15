@@ -6,9 +6,9 @@ import Source
 // Nodes are basic blocks
 // Edges are directed and point to possible next blocks
 public struct CFG: Equatable {
-  let nodes: Set<BasicBlock>
-  var edges: [BasicBlock: Set<NextBlock>]
-  var entryPoint: NextBlock
+  public let nodes: Set<BasicBlock>
+  public var edges: [BasicBlock: Set<NextBlock>]
+  public var entryPoint: NextBlock
 
   // Resolve NextBlocks to other NextBlocks
   // e.g. resolving a .passiveNext to a basicBlock
