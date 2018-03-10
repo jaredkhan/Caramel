@@ -65,6 +65,18 @@ class CFGTests: XCTestCase {
       }
 
       XCTAssertEqual(foundCFG, expectedCFG)
+
+      XCTAssertEqual(startNode.definitions(), [])
+      XCTAssertEqual(xAssignment.definitions(), ["s:8simpleIf1xSiv"])
+      XCTAssertEqual(ifCond.definitions(), [])
+      XCTAssertEqual(printHello.definitions(), [])
+      XCTAssertEqual(printGoodbye.definitions(), [])
+
+      XCTAssertEqual(startNode.references(), [])
+      XCTAssertEqual(xAssignment.references(), [])
+      XCTAssertEqual(ifCond.references(), ["s:8simpleIf1xSiv"])
+      XCTAssertEqual(printHello.references(), ["s:s5printySayypGd_SS9separatorSS10terminatortF"])
+      XCTAssertEqual(printGoodbye.references(), ["s:s5printySayypGd_SS9separatorSS10terminatortF"])
     }
 
     func testBreakFor() {
@@ -136,6 +148,18 @@ class CFGTests: XCTestCase {
       } 
 
       XCTAssertEqual(foundCFG, expectedCFG)
+
+      XCTAssertEqual(startNode.definitions(), []) 
+      XCTAssertEqual(threeArray.definitions(), []) 
+      XCTAssertEqual(forX1.definitions(), ["s:8breakFor1xL_Siv"]) 
+      XCTAssertEqual(printX.definitions(), []) 
+      XCTAssertEqual(break1.definitions(), []) 
+
+      XCTAssertEqual(startNode.references(), [])
+      XCTAssertEqual(threeArray.references(), [])
+      XCTAssertEqual(forX1.references(), [])
+      XCTAssertEqual(printX.references(), ["s:s5printySayypGd_SS9separatorSS10terminatortF", "s:8breakFor1xL_Siv"])
+      XCTAssertEqual(break1.references(), [])
     }
 
     func testBreakWhile() {
@@ -187,6 +211,14 @@ class CFGTests: XCTestCase {
       } 
 
       XCTAssertEqual(foundCFG, expectedCFG)
+
+      XCTAssertEqual(startNode.definitions(), [])
+      XCTAssertEqual(falseWhileCond.definitions(), [])
+      XCTAssertEqual(break2.definitions(), [])
+
+      XCTAssertEqual(startNode.references(), [])
+      XCTAssertEqual(falseWhileCond.references(), [])
+      XCTAssertEqual(break2.references(), [])
     }
 
     func testContinueFor() {
@@ -248,6 +280,16 @@ class CFGTests: XCTestCase {
       } 
 
       XCTAssertEqual(foundCFG, expectedCFG)
+
+      XCTAssertEqual(startNode.definitions(), []) 
+      XCTAssertEqual(threeRange.definitions(), []) 
+      XCTAssertEqual(forX2.definitions(), ["s:11continueFor1xL_Siv"]) 
+      XCTAssertEqual(continue1.definitions(), []) 
+
+      XCTAssertEqual(startNode.references(), []) 
+      XCTAssertEqual(threeRange.references(), ["s:s3zzzois20CountableClosedRangeVyxGx_xts10ComparableRzs11_StrideableRzs13SignedInteger6StridesAFPRpzlF"]) 
+      XCTAssertEqual(forX2.references(), []) 
+      XCTAssertEqual(continue1.references(), []) 
     }
 
     func testContinueWhile() {
@@ -299,6 +341,14 @@ class CFGTests: XCTestCase {
       } 
 
       XCTAssertEqual(foundCFG, expectedCFG)
+
+      XCTAssertEqual(startNode.definitions(), [])
+      XCTAssertEqual(oneGreaterThanTwo.definitions(), [])
+      XCTAssertEqual(continue2.definitions(), [])
+
+      XCTAssertEqual(startNode.references(), [])
+      XCTAssertEqual(oneGreaterThanTwo.references(), [])
+      XCTAssertEqual(continue2.references(), [])
     }
 
     func testSimpleGuard() {
@@ -350,6 +400,14 @@ class CFGTests: XCTestCase {
       } 
 
       XCTAssertEqual(foundCFG, expectedCFG)
+
+      XCTAssertEqual(startNode.definitions(), [])
+      XCTAssertEqual(guardCond.definitions(), [])
+      XCTAssertEqual(fatalDead.definitions(), [])
+
+      XCTAssertEqual(startNode.references(), [])
+      XCTAssertEqual(guardCond.references(), [])
+      XCTAssertEqual(fatalDead.references(), ["s:s10fatalErrors5NeverOSSyXK_s12StaticStringV4fileSu4linetF"])
     }
 
     func testSimpleSwitch() {
@@ -562,7 +620,11 @@ class CFGTests: XCTestCase {
           start: SourceLocation(identifier: identifier, line: 5, column: 1),
           end: SourceLocation(identifier: identifier, line: 5, column: 18)
         ),
-        type: .expression
+        type: .expression,
+        defRange: SourceRange(
+          start: SourceLocation(identifier: identifier, line: 5, column: 1),
+          end: SourceLocation(identifier: identifier, line: 5, column: 6)
+        )
       )
 
       let ifCond1 = BasicBlock(
@@ -586,7 +648,11 @@ class CFGTests: XCTestCase {
           start: SourceLocation(identifier: identifier, line: 9, column: 3),
           end: SourceLocation(identifier: identifier, line: 9, column: 12)
         ),
-        type: .expression
+        type: .expression,
+        defRange: SourceRange(
+          start: SourceLocation(identifier: identifier, line: 9, column: 3),
+          end: SourceLocation(identifier: identifier, line: 9, column: 8)
+        )
       )
 
       let xDecl = BasicBlock(
@@ -935,14 +1001,94 @@ class CFGTests: XCTestCase {
         entryPoint: .basicBlock(startNode)
       )
 
-      // if foundCFG != expectedCFG {
-      //   print("\n\nFOUND:\n")
-      //   dump(foundCFG)
-      //   print("\n\nEXPECTED:\n")
-      //   dump(expectedCFG)
-      // } 
+      if foundCFG != expectedCFG {
+        print("\n\nFOUND:\n")
+        dump(foundCFG)
+        print("\n\nEXPECTED:\n")
+        dump(expectedCFG)
+      } 
 
       XCTAssertEqual(foundCFG, expectedCFG)
+
+      XCTAssertEqual(startNode.definitions(), [])
+      XCTAssertEqual(myVarDeclaration.definitions(), ["s:13allStructures5myVarSiv"])
+      XCTAssertEqual(patternConstDeclaration.definitions(), ["s:13allStructures8patternlSiv", "s:13allStructures8patternrSiv"])
+      XCTAssertEqual(myVarInc.definitions(), ["s:13allStructures5myVarSiv"])
+      XCTAssertEqual(ifCond1.definitions(), [])
+      XCTAssertEqual(printHello.definitions(), [])
+      XCTAssertEqual(setMyVar.definitions(), ["s:13allStructures5myVarSiv"])
+      XCTAssertEqual(xDecl.definitions(), ["s:13allStructures1xL_Siv"])
+      XCTAssertEqual(ifCond2.definitions(), [])
+      XCTAssertEqual(printGoodbye.definitions(), [])
+      XCTAssertEqual(ifCond3.definitions(), [])
+      XCTAssertEqual(ifCond4.definitions(), [])
+      XCTAssertEqual(ifCond5.definitions(), [])
+      XCTAssertEqual(printWoah.definitions(), [])
+      XCTAssertEqual(threeArray.definitions(), [])
+      XCTAssertEqual(forX1.definitions(), ["s:13allStructures1xL_Siv"])
+      XCTAssertEqual(printX.definitions(), [])
+      XCTAssertEqual(break1.definitions(), [])
+      XCTAssertEqual(threeRange.definitions(), [])
+      XCTAssertEqual(forX2.definitions(), ["s:13allStructures1xL_Siv"])
+      XCTAssertEqual(continue1.definitions(), [])
+      XCTAssertEqual(oneGreaterThanTwo.definitions(), [])
+      XCTAssertEqual(continue2.definitions(), [])
+      XCTAssertEqual(falseWhileCond.definitions(), [])
+      XCTAssertEqual(break2.definitions(), [])
+      XCTAssertEqual(printHi.definitions(), [])
+      XCTAssertEqual(trueIfCond.definitions(), [])
+      XCTAssertEqual(break3.definitions(), [])
+      XCTAssertEqual(repeatWhileCond.definitions(), [])
+      XCTAssertEqual(guardCond.definitions(), [])
+      XCTAssertEqual(fatalDead.definitions(), [])
+      XCTAssertEqual(switchSubject.definitions(), [])
+      XCTAssertEqual(case1.definitions(), [])
+      XCTAssertEqual(case2.definitions(), [])
+      XCTAssertEqual(printOne.definitions(), [])
+      XCTAssertEqual(fallthroughStmt.definitions(), [])
+      XCTAssertEqual(case3.definitions(), [])
+      XCTAssertEqual(break4.definitions(), [])
+      XCTAssertEqual(printNope.definitions(), [])
+
+      XCTAssertEqual(startNode.references(), [])
+      XCTAssertEqual(myVarDeclaration.references(), [])
+      XCTAssertEqual(patternConstDeclaration.references(), [])
+      XCTAssertEqual(myVarInc.references(), ["s:13allStructures5myVarSiv", /* addition function */ "s:Si1poiS2i_SitFZ"])
+      XCTAssertEqual(ifCond1.references(), [])
+      XCTAssertEqual(printHello.references(), ["s:s5printySayypGd_SS9separatorSS10terminatortF"])
+      XCTAssertEqual(setMyVar.references(), [])
+      XCTAssertEqual(xDecl.references(), [])
+      XCTAssertEqual(ifCond2.references(), [])
+      XCTAssertEqual(printGoodbye.references(), ["s:s5printySayypGd_SS9separatorSS10terminatortF"])
+      XCTAssertEqual(ifCond3.references(), [])
+      XCTAssertEqual(ifCond4.references(), [])
+      XCTAssertEqual(ifCond5.references(), [])
+      XCTAssertEqual(printWoah.references(), ["s:s5printySayypGd_SS9separatorSS10terminatortF"])
+      XCTAssertEqual(threeArray.references(), [])
+      XCTAssertEqual(forX1.references(), [])
+      XCTAssertEqual(printX.references(), ["s:s5printySayypGd_SS9separatorSS10terminatortF", "s:13allStructures1xL_Siv"])
+      XCTAssertEqual(break1.references(), [])
+      XCTAssertEqual(threeRange.references(), ["s:s3zzzois20CountableClosedRangeVyxGx_xts10ComparableRzs11_StrideableRzs13SignedInteger6StridesAFPRpzlF"])
+      XCTAssertEqual(forX2.references(), [])
+      XCTAssertEqual(continue1.references(), [])
+      XCTAssertEqual(oneGreaterThanTwo.references(), [])
+      XCTAssertEqual(continue2.references(), [])
+      XCTAssertEqual(falseWhileCond.references(), [])
+      XCTAssertEqual(break2.references(), [])
+      XCTAssertEqual(printHi.references(), ["s:s5printySayypGd_SS9separatorSS10terminatortF"])
+      XCTAssertEqual(trueIfCond.references(), [])
+      XCTAssertEqual(break3.references(), [])
+      XCTAssertEqual(repeatWhileCond.references(), [])
+      XCTAssertEqual(guardCond.references(), [])
+      XCTAssertEqual(fatalDead.references(), ["s:s10fatalErrors5NeverOSSyXK_s12StaticStringV4fileSu4linetF"])
+      XCTAssertEqual(switchSubject.references(), [])
+      XCTAssertEqual(case1.references(), [])
+      XCTAssertEqual(case2.references(), [])
+      XCTAssertEqual(printOne.references(), ["s:s5printySayypGd_SS9separatorSS10terminatortF"])
+      XCTAssertEqual(fallthroughStmt.references(), [])
+      XCTAssertEqual(case3.references(), [])
+      XCTAssertEqual(break4.references(), [])
+      XCTAssertEqual(printNope.references(), ["s:s5printySayypGd_SS9separatorSS10terminatortF"])
     }
 
     static var allTests = [

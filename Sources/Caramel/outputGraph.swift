@@ -8,7 +8,6 @@ func outputGraph(dotFormat: String) {
 
   let inputPipe = Pipe()
   let inputHandle = inputPipe.fileHandleForWriting
-  print(dotFormat)
   inputHandle.write(dotFormat)
   inputHandle.closeFile()
 

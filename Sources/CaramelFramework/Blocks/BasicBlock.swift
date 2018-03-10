@@ -1,15 +1,18 @@
 import Source
 import SourceKittenFramework
+import AST
 
 public typealias USR = String
 
 public class BasicBlock {
   let range: SourceRange
   let type: BasicBlockType
+  let defRange: SourceRange?
 
-  init(range: SourceRange, type: BasicBlockType) {
+  init(range: SourceRange, type: BasicBlockType, defRange: SourceRange? = nil) {
     self.range = range
     self.type = type
+    self.defRange = defRange
   }
 
   // If we are getting the CFG of a BasicBlock directly,
@@ -33,7 +36,7 @@ public class BasicBlock {
     let startOffset = try! range.start.offset()
     let endOffset = try! range.end.offset()
 
-    var references = Set<USR>()
+    var definitions = Set<USR>()
 
     for offset in startOffset ..< endOffset {
       let cursorInfo: [String: SourceKitRepresentable] = Request.cursorInfo(
@@ -44,11 +47,27 @@ public class BasicBlock {
       if let kind = cursorInfo["key.kind"] as? String,
         kind.contains("swift.decl"),
         let usr = cursorInfo["key.usr"] as? String {
-          references.insert(usr)
+          definitions.insert(usr)
       }
     }
 
-    return references
+    // Add the references e.g on the left hand side of assignment expressions
+    if let defOffsetRange = defRange.map({ (try! $0.start.offset()) ..< (try! $0.end.offset()) }) {
+      for offset in defOffsetRange {
+        let cursorInfo: [String: SourceKitRepresentable] = Request.cursorInfo(
+          file: filePath,
+          offset: Int64(offset),
+          arguments: [filePath]
+        ).send()
+        if let kind = cursorInfo["key.kind"] as? String,
+          kind.contains("swift.ref"),
+          let usr = cursorInfo["key.usr"] as? String {
+            definitions.insert(usr)
+        }
+      }
+    }
+
+    return definitions
   }
 
   /// Lists all the symbols that are referred to in this block
@@ -63,7 +82,16 @@ public class BasicBlock {
 
     var references = Set<USR>()
 
+    let defOffsetRange = defRange.map {
+      (try! $0.start.offset()) ..< (try! $0.end.offset())
+    }
+
     for offset in startOffset ..< endOffset {
+      if let defOffsetRange = defOffsetRange, defOffsetRange ~= offset {
+        // This offset is in a spot which is being defined (rather than referenced)
+        continue
+      }
+
       let cursorInfo: [String: SourceKitRepresentable] = Request.cursorInfo(
         file: filePath,
         offset: Int64(offset),
@@ -94,7 +122,7 @@ public func getRefUSR(filePath: String, offset: Int64) -> String? {
 
 extension BasicBlock: Hashable {
   public static func == (lhs: BasicBlock, rhs: BasicBlock) -> Bool {
-    return (lhs.range, lhs.type) == (rhs.range, rhs.type)
+    return (lhs.range, lhs.type) == (rhs.range, rhs.type) && lhs.defRange == rhs.defRange
   }
 
   public var hashValue: Int {

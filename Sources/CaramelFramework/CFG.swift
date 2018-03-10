@@ -1,5 +1,6 @@
 import AST
 import Parser
+import Sema
 import Source
 
 /// Control Flow Graph
@@ -70,6 +71,9 @@ public extension CFG {
   public init(contentsOfFile filePath: String) {
     let parser = Parser(source: try! SourceReader.read(at: filePath))
     let topLevelDecl = try! parser.parse()
+
+    let seqExprFolding = SequenceExpressionFolding()
+    seqExprFolding.fold([topLevelDecl])
 
     self = getCFG(topLevelDecl)
   }

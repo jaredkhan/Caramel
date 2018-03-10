@@ -235,10 +235,19 @@ func getCFG(_ stmt: Statement) -> CFG {
 }
 
 func getNode(_ expr: Expression) -> BasicBlock {
-  return BasicBlock(
-    range: expr.sourceRange,
-    type: .expression
-  )
+  switch expr {
+    case let assignment as AssignmentOperatorExpression:
+      return BasicBlock(
+        range: expr.sourceRange,
+        type: .expression,
+        defRange: assignment.leftExpression.sourceRange
+      )
+    default:
+      return BasicBlock(
+        range: expr.sourceRange,
+        type: .expression
+      )
+  }
 }
 
 // If we are getting the CFG of an Expression directly,
@@ -261,7 +270,6 @@ func getCFG(_ elseClause: IfStatement.ElseClause) -> CFG {
   }
 }
 
-/// 
 func getCFG(_ pattern: Pattern) -> CFG {
   let node = BasicBlock(
     range: pattern.sourceRange,
@@ -330,7 +338,7 @@ func getPatternChainCFG(_ switchCase: SwitchStatement.Case) -> CFG {
       }
     )
   case .`default`(_):
-    // Everything matches the default case
+    // Everything matches the default case in a switch statement
     return CFG(
       nodes: [],
       edges: [:],
