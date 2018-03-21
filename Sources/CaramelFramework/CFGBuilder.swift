@@ -2,21 +2,7 @@ import AST
 import Source
 
 func getCFG(_ decl: TopLevelDeclaration) -> CFG {
-  let internalCFG = getCFG(decl.statements)
-  let startNode = BasicBlock(
-    range: SourceRange.EMPTY,
-    type: .start
-  )
-
-  let partialCFG = CFG(
-    nodes: [startNode],
-    edges: [
-      startNode: [internalCFG.entryPoint]
-    ],
-    entryPoint: .basicBlock(startNode)
-  )
-
-  return partialCFG.merging(with: internalCFG)
+  return getCFG(decl.statements)
 }
 
 func getCFG(_ block: CodeBlock) -> CFG {
@@ -113,7 +99,7 @@ func getCFG(_ stmt: Statement) -> CFG {
       // - If encounter a condition that does not hold, enter else block immediately
       // - Otherwise continue
       let elseCFG = getCFG(n.codeBlock).applying(context: [
-        .passiveNext: nil // You cannot leave a guards else condition
+        .passiveNext: nil // You cannot leave a guards else condition passively
         // TODO: What exit mechanisms can a guard use?
       ])
       let conditionChainCFG = getCFG(n.conditionList)

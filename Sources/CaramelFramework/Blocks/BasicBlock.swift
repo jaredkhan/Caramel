@@ -7,6 +7,7 @@ public typealias USR = String
 public class BasicBlock {
   let range: SourceRange
   let type: BasicBlockType
+  // A range within this block of symbols being defined (e.g. on the left hand side of an assignment operator)
   let defRange: SourceRange?
 
   init(range: SourceRange, type: BasicBlockType, defRange: SourceRange? = nil) {
@@ -28,7 +29,7 @@ public class BasicBlock {
 
   /// Lists all the symbols that are defined in this block
   public func definitions() -> Set<USR> {
-    guard self.type != .start else {
+    guard self.type != .start && self.type != .end else {
       return Set<USR>()
     }
 
@@ -72,7 +73,7 @@ public class BasicBlock {
 
   /// Lists all the symbols that are referred to in this block
   public func references() -> Set<USR> {
-    guard self.type != .start else {
+     guard self.type != .start && self.type != .end else {
       return Set<USR>()
     }
 
@@ -133,6 +134,8 @@ extension BasicBlock: Hashable {
 enum BasicBlockType {
   /// Synthesized start block for the CFG
   case start
+  /// Synthesized end block for the CFG
+  case end
   case condition
   case breakStatement
   case continueStatement

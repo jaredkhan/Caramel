@@ -11,7 +11,6 @@ class CFGTests: XCTestCase {
 
       let identifier = FileManager.default.currentDirectoryPath + "/" + simpleIfPath
 
-      let startNode = BasicBlock(range: SourceRange.EMPTY, type: .start)
       let xAssignment = BasicBlock(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 1, column: 1),
@@ -41,10 +40,9 @@ class CFGTests: XCTestCase {
         type: .expression
       )
 
-      let nodes = Set([startNode, xAssignment, ifCond, printHello, printGoodbye])
+      let nodes = Set([xAssignment, ifCond, printHello, printGoodbye])
 
       let edges: [BasicBlock: Set<NextBlock>] = [
-        startNode: [.basicBlock(xAssignment)],
         xAssignment: [.basicBlock(ifCond)],
         ifCond: [.basicBlock(printHello), .basicBlock(printGoodbye)],
         printHello: [.passiveNext],
@@ -54,7 +52,7 @@ class CFGTests: XCTestCase {
       let expectedCFG = CFG(
         nodes: nodes,
         edges: edges,
-        entryPoint: .basicBlock(startNode)
+        entryPoint: .basicBlock(xAssignment)
       )
 
       if foundCFG != expectedCFG {
@@ -66,13 +64,11 @@ class CFGTests: XCTestCase {
 
       XCTAssertEqual(foundCFG, expectedCFG)
 
-      XCTAssertEqual(startNode.definitions(), [])
       XCTAssertEqual(xAssignment.definitions(), ["s:8simpleIf1xSiv"])
       XCTAssertEqual(ifCond.definitions(), [])
       XCTAssertEqual(printHello.definitions(), [])
       XCTAssertEqual(printGoodbye.definitions(), [])
 
-      XCTAssertEqual(startNode.references(), [])
       XCTAssertEqual(xAssignment.references(), [])
       XCTAssertEqual(ifCond.references(), ["s:8simpleIf1xSiv"])
       XCTAssertEqual(printHello.references(), ["s:s5printySayypGd_SS9separatorSS10terminatortF"])
@@ -83,8 +79,6 @@ class CFGTests: XCTestCase {
       let filePath = "Resources/CFGTestFiles/breakFor.swift"
       let foundCFG = CFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
-
-      let startNode = BasicBlock(range: SourceRange.EMPTY, type: .start)
 
       let threeArray = BasicBlock(
         range: SourceRange(
@@ -119,7 +113,6 @@ class CFGTests: XCTestCase {
       )
 
       let nodes = Set([
-        startNode,
         threeArray,
         forX1,
         printX,
@@ -127,7 +120,6 @@ class CFGTests: XCTestCase {
       ])
 
       let edges: [BasicBlock: Set<NextBlock>] = [
-        startNode: [.basicBlock(threeArray)],
         threeArray: [.basicBlock(forX1)],
         forX1: [.basicBlock(printX), .passiveNext],
         printX: [.basicBlock(break1)],
@@ -137,7 +129,7 @@ class CFGTests: XCTestCase {
       let expectedCFG = CFG(
         nodes: nodes,
         edges: edges,
-        entryPoint: .basicBlock(startNode)
+        entryPoint: .basicBlock(threeArray)
       )
 
       if foundCFG != expectedCFG {
@@ -149,13 +141,11 @@ class CFGTests: XCTestCase {
 
       XCTAssertEqual(foundCFG, expectedCFG)
 
-      XCTAssertEqual(startNode.definitions(), []) 
       XCTAssertEqual(threeArray.definitions(), []) 
       XCTAssertEqual(forX1.definitions(), ["s:8breakFor1xL_Siv"]) 
       XCTAssertEqual(printX.definitions(), []) 
       XCTAssertEqual(break1.definitions(), []) 
 
-      XCTAssertEqual(startNode.references(), [])
       XCTAssertEqual(threeArray.references(), [])
       XCTAssertEqual(forX1.references(), [])
       XCTAssertEqual(printX.references(), ["s:s5printySayypGd_SS9separatorSS10terminatortF", "s:8breakFor1xL_Siv"])
@@ -166,8 +156,6 @@ class CFGTests: XCTestCase {
       let filePath = "Resources/CFGTestFiles/breakWhile.swift"
       let foundCFG = CFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
-
-      let startNode = BasicBlock(range: SourceRange.EMPTY, type: .start)
 
       let falseWhileCond = BasicBlock(
         range: SourceRange(
@@ -186,13 +174,11 @@ class CFGTests: XCTestCase {
       )
 
       let nodes = Set([
-        startNode,
         falseWhileCond,
         break2
       ])
 
       let edges: [BasicBlock: Set<NextBlock>] = [
-        startNode: [.basicBlock(falseWhileCond)],
         falseWhileCond: [.basicBlock(break2), .passiveNext],
         break2: [.passiveNext]
       ]
@@ -200,7 +186,7 @@ class CFGTests: XCTestCase {
       let expectedCFG = CFG(
         nodes: nodes,
         edges: edges,
-        entryPoint: .basicBlock(startNode)
+        entryPoint: .basicBlock(falseWhileCond)
       )
 
       if foundCFG != expectedCFG {
@@ -212,11 +198,9 @@ class CFGTests: XCTestCase {
 
       XCTAssertEqual(foundCFG, expectedCFG)
 
-      XCTAssertEqual(startNode.definitions(), [])
       XCTAssertEqual(falseWhileCond.definitions(), [])
       XCTAssertEqual(break2.definitions(), [])
 
-      XCTAssertEqual(startNode.references(), [])
       XCTAssertEqual(falseWhileCond.references(), [])
       XCTAssertEqual(break2.references(), [])
     }
@@ -225,8 +209,6 @@ class CFGTests: XCTestCase {
       let filePath = "Resources/CFGTestFiles/continueFor.swift"
       let foundCFG = CFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
-
-      let startNode = BasicBlock(range: SourceRange.EMPTY, type: .start)
 
       let threeRange = BasicBlock(
         range: SourceRange(
@@ -253,14 +235,12 @@ class CFGTests: XCTestCase {
       )
 
       let nodes = Set([
-        startNode,
         threeRange,
         forX2,
         continue1
       ])
 
       let edges: [BasicBlock: Set<NextBlock>] = [
-        startNode: [.basicBlock(threeRange)],
         threeRange: [.basicBlock(forX2)],
         forX2: [.basicBlock(continue1), .passiveNext],
         continue1: [.basicBlock(forX2)],
@@ -269,7 +249,7 @@ class CFGTests: XCTestCase {
       let expectedCFG = CFG(
         nodes: nodes,
         edges: edges,
-        entryPoint: .basicBlock(startNode)
+        entryPoint: .basicBlock(threeRange)
       )
 
       if foundCFG != expectedCFG {
@@ -281,12 +261,10 @@ class CFGTests: XCTestCase {
 
       XCTAssertEqual(foundCFG, expectedCFG)
 
-      XCTAssertEqual(startNode.definitions(), []) 
       XCTAssertEqual(threeRange.definitions(), []) 
       XCTAssertEqual(forX2.definitions(), ["s:11continueFor1xL_Siv"]) 
       XCTAssertEqual(continue1.definitions(), []) 
 
-      XCTAssertEqual(startNode.references(), []) 
       XCTAssertEqual(threeRange.references(), ["s:s3zzzois20CountableClosedRangeVyxGx_xts10ComparableRzs11_StrideableRzs13SignedInteger6StridesAFPRpzlF"]) 
       XCTAssertEqual(forX2.references(), []) 
       XCTAssertEqual(continue1.references(), []) 
@@ -296,8 +274,6 @@ class CFGTests: XCTestCase {
       let filePath = "Resources/CFGTestFiles/continueWhile.swift"
       let foundCFG = CFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
-
-      let startNode = BasicBlock(range: SourceRange.EMPTY, type: .start)
 
       let oneGreaterThanTwo = BasicBlock(
         range: SourceRange(
@@ -316,13 +292,11 @@ class CFGTests: XCTestCase {
       )
 
       let nodes = Set([
-        startNode,
         oneGreaterThanTwo,
         continue2,
       ])
 
       let edges: [BasicBlock: Set<NextBlock>] = [
-        startNode: [.basicBlock(oneGreaterThanTwo)],
         oneGreaterThanTwo: [.basicBlock(continue2), .passiveNext],
         continue2: [.basicBlock(oneGreaterThanTwo)]
       ]
@@ -330,7 +304,7 @@ class CFGTests: XCTestCase {
       let expectedCFG = CFG(
         nodes: nodes,
         edges: edges,
-        entryPoint: .basicBlock(startNode)
+        entryPoint: .basicBlock(oneGreaterThanTwo)
       )
 
       if foundCFG != expectedCFG {
@@ -342,11 +316,9 @@ class CFGTests: XCTestCase {
 
       XCTAssertEqual(foundCFG, expectedCFG)
 
-      XCTAssertEqual(startNode.definitions(), [])
       XCTAssertEqual(oneGreaterThanTwo.definitions(), [])
       XCTAssertEqual(continue2.definitions(), [])
 
-      XCTAssertEqual(startNode.references(), [])
       XCTAssertEqual(oneGreaterThanTwo.references(), [])
       XCTAssertEqual(continue2.references(), [])
     }
@@ -355,8 +327,6 @@ class CFGTests: XCTestCase {
       let filePath = "Resources/CFGTestFiles/simpleGuard.swift"
       let foundCFG = CFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
-
-      let startNode = BasicBlock(range: SourceRange.EMPTY, type: .start)
 
       let guardCond = BasicBlock(
         range: SourceRange(
@@ -375,13 +345,11 @@ class CFGTests: XCTestCase {
       )
 
       let nodes = Set([
-        startNode,
         guardCond,
         fatalDead,
       ])
 
       let edges: [BasicBlock: Set<NextBlock>] = [
-        startNode: [.basicBlock(guardCond)],
         guardCond: [.passiveNext, .basicBlock(fatalDead)],
         fatalDead: [],
       ]
@@ -389,7 +357,7 @@ class CFGTests: XCTestCase {
       let expectedCFG = CFG(
         nodes: nodes,
         edges: edges,
-        entryPoint: .basicBlock(startNode)
+        entryPoint: .basicBlock(guardCond)
       )
 
       if foundCFG != expectedCFG {
@@ -401,11 +369,9 @@ class CFGTests: XCTestCase {
 
       XCTAssertEqual(foundCFG, expectedCFG)
 
-      XCTAssertEqual(startNode.definitions(), [])
       XCTAssertEqual(guardCond.definitions(), [])
       XCTAssertEqual(fatalDead.definitions(), [])
 
-      XCTAssertEqual(startNode.references(), [])
       XCTAssertEqual(guardCond.references(), [])
       XCTAssertEqual(fatalDead.references(), ["s:s10fatalErrors5NeverOSSyXK_s12StaticStringV4fileSu4linetF"])
     }
@@ -414,8 +380,6 @@ class CFGTests: XCTestCase {
       let filePath = "Resources/CFGTestFiles/simpleSwitch.swift"
       let foundCFG = CFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
-
-      let startNode = BasicBlock(range: SourceRange.EMPTY, type: .start)
 
       let switchSubject = BasicBlock(
         range: SourceRange(
@@ -482,7 +446,6 @@ class CFGTests: XCTestCase {
       )
 
       let nodes = Set([
-        startNode,
         switchSubject,
         case1,
         case2,
@@ -494,7 +457,6 @@ class CFGTests: XCTestCase {
       ])
 
       let edges: [BasicBlock: Set<NextBlock>] = [
-        startNode: [.basicBlock(switchSubject)],
         switchSubject: [.basicBlock(case1)],
         case1: [.basicBlock(printOne), .basicBlock(case2)],
         case2: [.basicBlock(printOne), .basicBlock(case3)],
@@ -508,7 +470,7 @@ class CFGTests: XCTestCase {
       let expectedCFG = CFG(
         nodes: nodes,
         edges: edges,
-        entryPoint: .basicBlock(startNode)
+        entryPoint: .basicBlock(switchSubject)
       )
 
       if foundCFG != expectedCFG {
@@ -525,8 +487,6 @@ class CFGTests: XCTestCase {
       let filePath = "Resources/CFGTestFiles/repeatWhileNest.swift"
       let foundCFG = CFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
-
-      let startNode = BasicBlock(range: SourceRange.EMPTY, type: .start)
 
       let printHi = BasicBlock(
         range: SourceRange(
@@ -561,7 +521,6 @@ class CFGTests: XCTestCase {
       )
 
       let nodes = Set([
-        startNode,
         printHi,
         trueIfCond,
         break3,
@@ -569,7 +528,6 @@ class CFGTests: XCTestCase {
       ])
 
       let edges: [BasicBlock: Set<NextBlock>] = [
-        startNode: [.basicBlock(printHi)],
         printHi: [.basicBlock(trueIfCond)],
         trueIfCond: [.basicBlock(break3), .basicBlock(repeatWhileCond)],
         break3: [.basicBlock(repeatWhileCond)],
@@ -579,7 +537,7 @@ class CFGTests: XCTestCase {
       let expectedCFG = CFG(
         nodes: nodes,
         edges: edges,
-        entryPoint: .basicBlock(startNode)
+        entryPoint: .basicBlock(printHi)
       )
 
       if foundCFG != expectedCFG {
@@ -596,8 +554,6 @@ class CFGTests: XCTestCase {
       let filePath = "Resources/CFGTestFiles/allStructures.swift"
       let foundCFG = CFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
-
-      let startNode = BasicBlock(range: SourceRange.EMPTY, type: .start)
 
       let myVarDeclaration = BasicBlock(
         range: SourceRange(
@@ -912,7 +868,6 @@ class CFGTests: XCTestCase {
       )
 
       let nodes = Set([
-        startNode,
         myVarDeclaration,
         patternConstDeclaration,
         myVarInc,
@@ -954,7 +909,6 @@ class CFGTests: XCTestCase {
       ])
 
       let edges: [BasicBlock: Set<NextBlock>] = [
-        startNode: [.basicBlock(myVarDeclaration)],
         myVarDeclaration: [.basicBlock(patternConstDeclaration)],
         patternConstDeclaration: [.basicBlock(myVarInc)],
         myVarInc: [.basicBlock(ifCond1)],
@@ -998,7 +952,7 @@ class CFGTests: XCTestCase {
       let expectedCFG = CFG(
         nodes: nodes,
         edges: edges,
-        entryPoint: .basicBlock(startNode)
+        entryPoint: .basicBlock(myVarDeclaration)
       )
 
       if foundCFG != expectedCFG {
@@ -1010,7 +964,6 @@ class CFGTests: XCTestCase {
 
       XCTAssertEqual(foundCFG, expectedCFG)
 
-      XCTAssertEqual(startNode.definitions(), [])
       XCTAssertEqual(myVarDeclaration.definitions(), ["s:13allStructures5myVarSiv"])
       XCTAssertEqual(patternConstDeclaration.definitions(), ["s:13allStructures8patternlSiv", "s:13allStructures8patternrSiv"])
       XCTAssertEqual(myVarInc.definitions(), ["s:13allStructures5myVarSiv"])
@@ -1050,7 +1003,6 @@ class CFGTests: XCTestCase {
       XCTAssertEqual(break4.definitions(), [])
       XCTAssertEqual(printNope.definitions(), [])
 
-      XCTAssertEqual(startNode.references(), [])
       XCTAssertEqual(myVarDeclaration.references(), [])
       XCTAssertEqual(patternConstDeclaration.references(), [])
       XCTAssertEqual(myVarInc.references(), ["s:13allStructures5myVarSiv", /* addition function */ "s:Si1poiS2i_SitFZ"])
