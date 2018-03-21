@@ -5,15 +5,11 @@ import SwiftShell
 if CommandLine.arguments.count > 1 {
 
   let cfg = CFG(contentsOfFile: CommandLine.arguments[1])
+  let completeCFG = try! CompleteCFG(cfg: cfg)
+  let pdg = PDG(cfg: completeCFG)
 
-  // for node in cfg.nodes {
-  //   print("REF")
-  //   dump(node.references())
-  //   print("DEF")
-  //   dump(node.definitions())
-  // }
-
-  outputGraph(dotFormat: cfg.graphVizDotFormat())
+  outputGraph(dotFormat: pdg.graphVizDotFormat())
+  printSlice(pdg.slice(line: 12, column: 8)!, ofFile: CommandLine.arguments[1])
 
 } else {
   print("error: no file given")

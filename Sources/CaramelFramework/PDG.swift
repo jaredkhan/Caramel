@@ -4,13 +4,16 @@
 public class PDG {
   public let nodes: Set<BasicBlock>
   public let edges: [BasicBlock: Set<PDGEdge>]
+  public let reverseEdges: [BasicBlock: Set<PDGEdge>]
   public let start: BasicBlock
 
   public init(cfg: CompleteCFG) {
     var nodes = Set<BasicBlock>()
     var edges = [BasicBlock: Set<PDGEdge>]()
+    var reverseEdges = [BasicBlock: Set<PDGEdge>]()
     for node in cfg.nodes {
       edges[node] = []
+      reverseEdges[node] = []
     }
     let postdominatorTree = buildImmediatePostdominatorTree(cfg: cfg)
     for node in cfg.nodes {
@@ -26,18 +29,51 @@ public class PDG {
       )
 
       for controlDependent in controlDependents {
-        edges[node]!.formUnion([.control(controlDependent)])
+        edges[node]!.insert(.control(controlDependent))
+        reverseEdges[controlDependent]!.insert(.control(node))
       }
 
       let dataDependents = findDataDependents(of: node, inCFG: cfg)
 
       for dataDependent in dataDependents {
-        edges[node]!.formUnion([.data(dataDependent)])
+        edges[node]!.insert(.data(dataDependent))
+        reverseEdges[dataDependent]!.insert(.data(node))
       }
     }
     self.nodes = nodes
     self.edges = edges
+    self.reverseEdges = reverseEdges
     self.start = cfg.start
+  }
+
+  public func slice(criterion: BasicBlock) -> Set<BasicBlock> {
+    var remainingNodeStack = [criterion]
+    var sliceNodes = Set<BasicBlock>()
+
+    while let currentNode = remainingNodeStack.popLast() {
+      guard !sliceNodes.contains(currentNode) else { continue }
+      sliceNodes.insert(currentNode)
+      for edge in reverseEdges[currentNode] ?? [] {
+        switch edge {
+          case .control(let nextNode):
+            remainingNodeStack.append(nextNode)
+          case .data(let nextNode):
+            remainingNodeStack.append(nextNode)
+        }
+      }
+    }
+
+    return sliceNodes
+  }
+
+  public func slice(line: Int, column: Int) -> Set<BasicBlock>? {
+    // Find a node whose range contains this point
+    return nodes.first(where: {
+      $0.range.start.line <= line &&
+      $0.range.start.column <= column &&
+      $0.range.end.line >= line &&
+      $0.range.end.column >= column
+    }).map { slice(criterion: $0) }
   }
 }
 
@@ -192,7 +228,6 @@ private func pathToSink(inPostDominatorTree postdominatorTree: [BasicBlock: Basi
 }
 
 public func findControlDependents(of startPoint: BasicBlock, inCFG cfg: CompleteCFG, withPostdominatorTree postdominatorTree: [BasicBlock: BasicBlock]) -> Set<BasicBlock> {
-  // TODO: Factor this out
   let childPostdominators = cfg.edges[startPoint]!.map { child in
     pathToSink(inPostDominatorTree: postdominatorTree, from: child)
   }

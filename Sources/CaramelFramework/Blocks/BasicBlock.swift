@@ -5,8 +5,8 @@ import AST
 public typealias USR = String
 
 public class BasicBlock {
-  let range: SourceRange
-  let type: BasicBlockType
+  public let range: SourceRange
+  public let type: BasicBlockType
   // A range within this block of symbols being defined (e.g. on the left hand side of an assignment operator)
   let defRange: SourceRange?
 
@@ -131,7 +131,7 @@ extension BasicBlock: Hashable {
   }
 }
 
-enum BasicBlockType {
+public enum BasicBlockType {
   /// Synthesized start block for the CFG
   case start
   /// Synthesized end block for the CFG
