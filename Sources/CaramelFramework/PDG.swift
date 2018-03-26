@@ -1,3 +1,5 @@
+import Foundation
+
 /// Program Dependence Graph
 /// Nodes are Basic Blocks
 /// Edges are dependencies between blocks (either data or control dependencies)
@@ -15,12 +17,22 @@ public class PDG {
       edges[node] = []
       reverseEdges[node] = []
     }
+    print("Building postdominator tree:")
+    print(NSDate().timeIntervalSince1970)
     let postdominatorTree = buildImmediatePostdominatorTree(cfg: cfg)
+    print("Built postdominator tree:")
+    print(NSDate().timeIntervalSince1970)
+
+    var controlDepTime: TimeInterval = 0
+    var dataDepTime: TimeInterval = 0
+
     for node in cfg.nodes {
       // Nothing is control or data dependent on the end node,
       // Do not include it in the PDG
       guard node != cfg.end else { continue }
       nodes.insert(node)
+
+      let cdStart = NSDate().timeIntervalSince1970
 
       let controlDependents = findControlDependents(
         of: node,
@@ -33,13 +45,23 @@ public class PDG {
         reverseEdges[controlDependent]!.insert(.control(node))
       }
 
+      let ddStart = NSDate().timeIntervalSince1970
+
       let dataDependents = findDataDependents(of: node, inCFG: cfg)
 
       for dataDependent in dataDependents {
         edges[node]!.insert(.data(dataDependent))
         reverseEdges[dataDependent]!.insert(.data(node))
       }
+
+      let ddEnd = NSDate().timeIntervalSince1970
+      controlDepTime += ddStart - cdStart
+      dataDepTime += ddEnd - ddStart
     }
+    print("Control dep time: \(controlDepTime)")
+    print("Data dep time: \(dataDepTime)")
+    print("Built PDG:")
+    print(NSDate().timeIntervalSince1970)
     self.nodes = nodes
     self.edges = edges
     self.reverseEdges = reverseEdges
