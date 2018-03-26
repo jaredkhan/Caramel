@@ -4,7 +4,7 @@ import SwiftShell
 
 if CommandLine.arguments.count > 1 {
 
-  let cfg = CFG(contentsOfFile: CommandLine.arguments[1])
+  let cfg = PartialCFG(contentsOfFile: CommandLine.arguments[1])
   let completeCFG = try! CompleteCFG(cfg: cfg)
   let pdg = PDG(cfg: completeCFG)
 

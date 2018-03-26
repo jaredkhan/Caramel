@@ -40,7 +40,7 @@ class DataDependentsTests: XCTestCase {
         )
       )
 
-      let completeCFG = try! CompleteCFG(cfg: CFG(
+      let completeCFG = try! CompleteCFG(cfg: PartialCFG(
         nodes: [xZero, xTwo, xThree],
         edges: [
           xZero: [.basicBlock(xTwo)],
@@ -107,7 +107,7 @@ class DataDependentsTests: XCTestCase {
         type: .expression
       )
 
-      let completeCFG = try! CompleteCFG(cfg: CFG(
+      let completeCFG = try! CompleteCFG(cfg: PartialCFG(
         nodes: [xEmptyString, ifCond, xHello, xBonjour, printX],
         edges: [
           xEmptyString: [.basicBlock(ifCond)],

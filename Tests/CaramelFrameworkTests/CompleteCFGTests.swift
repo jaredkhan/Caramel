@@ -45,7 +45,7 @@ class CompleteCFGTests: XCTestCase {
         endNode: [guardCond, fatalDead]
       ]
 
-      let completeCFG = try! CompleteCFG(cfg: CFG(
+      let completeCFG = try! CompleteCFG(cfg: PartialCFG(
         nodes: [guardCond, fatalDead],
         edges: [
           guardCond: [.basicBlock(fatalDead), .passiveNext],

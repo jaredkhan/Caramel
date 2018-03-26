@@ -16,11 +16,11 @@ public class BasicBlock {
     self.defRange = defRange
   }
 
-  // If we are getting the CFG of a BasicBlock directly,
+  // If we are getting the PartialCFG of a BasicBlock directly,
   // then we just want a wrapper that has this basic block as an entry point and moves on
   // TODO: Implement guard, break etc.
-  func getCFG() -> CFG {
-    return CFG(
+  func getCFG() -> PartialCFG {
+    return PartialCFG(
       nodes: [self],
       edges: [self: [.passiveNext]],
       entryPoint: .basicBlock(self)

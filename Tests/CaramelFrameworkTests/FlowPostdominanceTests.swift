@@ -35,7 +35,7 @@ class FlowPostdominanceTests: XCTestCase {
       type: .expression
     )
 
-    let completeCFG = try! CompleteCFG(cfg: CFG(
+    let completeCFG = try! CompleteCFG(cfg: PartialCFG(
       nodes: [xZero, xOne, printX],
       edges: [
         xZero: [.basicBlock(xOne)],
@@ -104,7 +104,7 @@ class FlowPostdominanceTests: XCTestCase {
       type: .expression
     )
 
-    let completeCFG = try! CompleteCFG(cfg: CFG(
+    let completeCFG = try! CompleteCFG(cfg: PartialCFG(
       nodes: [xZero, ifCond, printX, printThing, xThree, printDone],
       edges: [
         xZero: [.basicBlock(ifCond)],

@@ -2,12 +2,12 @@ import XCTest
 import Source
 @testable import CaramelFramework
 
-class CFGTests: XCTestCase {
+class PartialCFGTests: XCTestCase {
     func testSimpleIf() {
       // Get path
       let simpleIfPath = "Resources/CFGTestFiles/simpleIf.swift"
 
-      let foundCFG = CFG(contentsOfFile: simpleIfPath)
+      let foundCFG = PartialCFG(contentsOfFile: simpleIfPath)
 
       let identifier = FileManager.default.currentDirectoryPath + "/" + simpleIfPath
 
@@ -49,7 +49,7 @@ class CFGTests: XCTestCase {
         printGoodbye: [.passiveNext]
       ]
 
-      let expectedCFG = CFG(
+      let expectedCFG = PartialCFG(
         nodes: nodes,
         edges: edges,
         entryPoint: .basicBlock(xAssignment)
@@ -77,7 +77,7 @@ class CFGTests: XCTestCase {
 
     func testBreakFor() {
       let filePath = "Resources/CFGTestFiles/breakFor.swift"
-      let foundCFG = CFG(contentsOfFile: filePath)
+      let foundCFG = PartialCFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
 
       let threeArray = BasicBlock(
@@ -126,7 +126,7 @@ class CFGTests: XCTestCase {
         break1: [.passiveNext]
       ]
 
-      let expectedCFG = CFG(
+      let expectedCFG = PartialCFG(
         nodes: nodes,
         edges: edges,
         entryPoint: .basicBlock(threeArray)
@@ -154,7 +154,7 @@ class CFGTests: XCTestCase {
 
     func testBreakWhile() {
       let filePath = "Resources/CFGTestFiles/breakWhile.swift"
-      let foundCFG = CFG(contentsOfFile: filePath)
+      let foundCFG = PartialCFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
 
       let falseWhileCond = BasicBlock(
@@ -183,7 +183,7 @@ class CFGTests: XCTestCase {
         break2: [.passiveNext]
       ]
 
-      let expectedCFG = CFG(
+      let expectedCFG = PartialCFG(
         nodes: nodes,
         edges: edges,
         entryPoint: .basicBlock(falseWhileCond)
@@ -207,7 +207,7 @@ class CFGTests: XCTestCase {
 
     func testContinueFor() {
       let filePath = "Resources/CFGTestFiles/continueFor.swift"
-      let foundCFG = CFG(contentsOfFile: filePath)
+      let foundCFG = PartialCFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
 
       let threeRange = BasicBlock(
@@ -246,7 +246,7 @@ class CFGTests: XCTestCase {
         continue1: [.basicBlock(forX2)],
       ]
 
-      let expectedCFG = CFG(
+      let expectedCFG = PartialCFG(
         nodes: nodes,
         edges: edges,
         entryPoint: .basicBlock(threeRange)
@@ -272,7 +272,7 @@ class CFGTests: XCTestCase {
 
     func testContinueWhile() {
       let filePath = "Resources/CFGTestFiles/continueWhile.swift"
-      let foundCFG = CFG(contentsOfFile: filePath)
+      let foundCFG = PartialCFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
 
       let oneGreaterThanTwo = BasicBlock(
@@ -301,7 +301,7 @@ class CFGTests: XCTestCase {
         continue2: [.basicBlock(oneGreaterThanTwo)]
       ]
 
-      let expectedCFG = CFG(
+      let expectedCFG = PartialCFG(
         nodes: nodes,
         edges: edges,
         entryPoint: .basicBlock(oneGreaterThanTwo)
@@ -325,7 +325,7 @@ class CFGTests: XCTestCase {
 
     func testSimpleGuard() {
       let filePath = "Resources/CFGTestFiles/simpleGuard.swift"
-      let foundCFG = CFG(contentsOfFile: filePath)
+      let foundCFG = PartialCFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
 
       let guardCond = BasicBlock(
@@ -354,7 +354,7 @@ class CFGTests: XCTestCase {
         fatalDead: [],
       ]
 
-      let expectedCFG = CFG(
+      let expectedCFG = PartialCFG(
         nodes: nodes,
         edges: edges,
         entryPoint: .basicBlock(guardCond)
@@ -378,7 +378,7 @@ class CFGTests: XCTestCase {
 
     func testSimpleSwitch() {
       let filePath = "Resources/CFGTestFiles/simpleSwitch.swift"
-      let foundCFG = CFG(contentsOfFile: filePath)
+      let foundCFG = PartialCFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
 
       let switchSubject = BasicBlock(
@@ -467,7 +467,7 @@ class CFGTests: XCTestCase {
         printNope: [.passiveNext]
       ]
 
-      let expectedCFG = CFG(
+      let expectedCFG = PartialCFG(
         nodes: nodes,
         edges: edges,
         entryPoint: .basicBlock(switchSubject)
@@ -485,7 +485,7 @@ class CFGTests: XCTestCase {
 
     func testRepeatWhileNest() {
       let filePath = "Resources/CFGTestFiles/repeatWhileNest.swift"
-      let foundCFG = CFG(contentsOfFile: filePath)
+      let foundCFG = PartialCFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
 
       let printHi = BasicBlock(
@@ -534,7 +534,7 @@ class CFGTests: XCTestCase {
         repeatWhileCond: [.passiveNext, .basicBlock(printHi)],
       ]
 
-      let expectedCFG = CFG(
+      let expectedCFG = PartialCFG(
         nodes: nodes,
         edges: edges,
         entryPoint: .basicBlock(printHi)
@@ -552,7 +552,7 @@ class CFGTests: XCTestCase {
 
     func testAllStructures() {
       let filePath = "Resources/CFGTestFiles/allStructures.swift"
-      let foundCFG = CFG(contentsOfFile: filePath)
+      let foundCFG = PartialCFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
 
       let myVarDeclaration = BasicBlock(
@@ -949,7 +949,7 @@ class CFGTests: XCTestCase {
         printNope: [.passiveNext]
       ]
 
-      let expectedCFG = CFG(
+      let expectedCFG = PartialCFG(
         nodes: nodes,
         edges: edges,
         entryPoint: .basicBlock(myVarDeclaration)

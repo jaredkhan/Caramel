@@ -1,4 +1,4 @@
-import Source
+// This file adds GraphViz 'dot' support to BasicBlocks
 
 extension BasicBlock {
   var graphVizIdentifier: String {
@@ -39,34 +39,5 @@ extension BasicBlock {
         
         return label
     }
-  }
-}
-
-public extension CFG {
-  func graphVizDotFormat() -> String {
-    var result = "digraph G {"
-
-    result += "node [shape=box]"
-
-    for node in nodes {
-      result += "\(node.graphVizIdentifier) [label=\"\(node.graphVizLabel)\"];"
-    }
-
-    for (node, outgoingEdges) in edges {
-      for outgoingEdge in outgoingEdges {
-        switch outgoingEdge {
-          case .basicBlock(let nextBlock): 
-            result += "\(node.graphVizIdentifier) -> \(nextBlock.graphVizIdentifier);"
-          case .passiveNext:
-            result += "\(node.graphVizIdentifier) -> END;"
-          default: 
-            result += "\(node.graphVizIdentifier) -> UNKNOWN;"
-        }
-      }
-    }
-
-    result += "}"
-
-    return result
   }
 }

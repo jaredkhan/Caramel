@@ -27,7 +27,7 @@ public class CompleteCFG: Equatable {
 
   /// Initialise a CompleteCFG from a partial CFG
   /// Complexity: O(E) time
-  public init(cfg: CFG) throws {
+  public init(cfg: PartialCFG) throws {
     self.start = BasicBlock(
       range: SourceRange.EMPTY,
       type: .start
@@ -84,7 +84,6 @@ public class CompleteCFG: Equatable {
   }
 
   private static func edgesMatch(_ lhs: CompleteCFG, _ rhs: CompleteCFG) -> Bool {
-    
     if lhs.edges.count != rhs.edges.count { return false }
     for key in lhs.edges.keys {
       if lhs.edges[key] != rhs.edges[key] { return false }

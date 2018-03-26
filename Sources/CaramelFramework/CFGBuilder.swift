@@ -1,16 +1,16 @@
 import AST
 import Source
 
-func getCFG(_ decl: TopLevelDeclaration) -> CFG {
+func getCFG(_ decl: TopLevelDeclaration) -> PartialCFG {
   return getCFG(decl.statements)
 }
 
-func getCFG(_ block: CodeBlock) -> CFG {
+func getCFG(_ block: CodeBlock) -> PartialCFG {
   return getCFG(block.statements)
 }
 
-func getCFG(_ statements: [Statement]) -> CFG {
-  return CFG(
+func getCFG(_ statements: [Statement]) -> PartialCFG {
+  return PartialCFG(
     chainingCFGs: statements.map { getCFG($0) },
     withContext: { currentCfg, nextCfg in 
       [
@@ -22,48 +22,48 @@ func getCFG(_ statements: [Statement]) -> CFG {
   )
 }
 
-func getCFG(_ stmt: Statement) -> CFG {
+func getCFG(_ stmt: Statement) -> PartialCFG {
   // Check if declaration
   // Check type of statement
   switch stmt {
     case let n as ConstantDeclaration: 
       let block = BasicBlock(range: n.sourceRange, type: .expression)
-      return CFG(
+      return PartialCFG(
         nodes: [block],
         edges: [block: [.passiveNext]],
         entryPoint: .basicBlock(block)
       )
     case let n as VariableDeclaration: 
       let block = BasicBlock(range: n.sourceRange, type: .expression)
-      return CFG(
+      return PartialCFG(
         nodes: [block],
         edges: [block: [.passiveNext]],
         entryPoint: .basicBlock(block)
       )
     case let n as BreakStatement: 
       let block = BasicBlock(range: n.sourceRange, type: .breakStatement)
-      return CFG(
+      return PartialCFG(
         nodes: [block],
         edges: [block: [.breakStatement]],
         entryPoint: .basicBlock(block)
       )
     case let n as ContinueStatement: 
       let block = BasicBlock(range: n.sourceRange, type: .continueStatement)
-      return CFG(
+      return PartialCFG(
         nodes: [block],
         edges: [block: [.continueStatement]],
         entryPoint: .basicBlock(block)
       )
     case let n as DeferStatement: 
       let block = BasicBlock(range: n.sourceRange, type: .breakStatement)
-      return CFG(
+      return PartialCFG(
         nodes: [block],
         edges: [block: [.breakStatement]],
         entryPoint: .basicBlock(block)
       )
     case let n as FallthroughStatement: 
       let block = BasicBlock(range: n.sourceRange, type: .fallthroughStatement)
-      return CFG(
+      return PartialCFG(
         nodes: [block],
         edges: [block: [.switchFallthrough]],
         entryPoint: .basicBlock(block)
@@ -114,7 +114,7 @@ func getCFG(_ stmt: Statement) -> CFG {
       // - If encounter a condition that does not hold, enter else block immediately
       // - Otherwise continue
       let bodyCFG = getCFG(n.codeBlock)
-      let elseCFG = n.elseClause.map(getCFG) ?? CFG.empty
+      let elseCFG = n.elseClause.map(getCFG) ?? PartialCFG.empty
       let conditionChainCFG = getCFG(n.conditionList)
 
       return conditionChainCFG.applying(context: [
@@ -170,7 +170,7 @@ func getCFG(_ stmt: Statement) -> CFG {
         ])
       }
 
-      return CFG(
+      return PartialCFG(
         nodes: [subject],
         edges: [
           subject: [cases[0].patternChainCFG.entryPoint]
@@ -236,18 +236,18 @@ func getNode(_ expr: Expression) -> BasicBlock {
   }
 }
 
-// If we are getting the CFG of an Expression directly,
+// If we are getting the PartialCFG of an Expression directly,
 // then we just want a wrapper that has this expression as an entry point and moves on
-func getCFG(_ expr: Expression) -> CFG {
+func getCFG(_ expr: Expression) -> PartialCFG {
   let node = getNode(expr)
-  return CFG(
+  return PartialCFG(
     nodes: [node],
     edges: [node: [.passiveNext]],
     entryPoint: .basicBlock(node)
   )
 }
 
-func getCFG(_ elseClause: IfStatement.ElseClause) -> CFG {
+func getCFG(_ elseClause: IfStatement.ElseClause) -> PartialCFG {
   switch elseClause {
     case let .else(codeBlock):
       return getCFG(codeBlock)
@@ -256,12 +256,12 @@ func getCFG(_ elseClause: IfStatement.ElseClause) -> CFG {
   }
 }
 
-func getCFG(_ pattern: Pattern) -> CFG {
+func getCFG(_ pattern: Pattern) -> PartialCFG {
   let node = BasicBlock(
     range: pattern.sourceRange,
     type: .pattern
   )
-  return CFG(
+  return PartialCFG(
     nodes: [node],
     edges: [
       node: [.patternMatch, .patternNotMatch]
@@ -270,14 +270,14 @@ func getCFG(_ pattern: Pattern) -> CFG {
   )
 }
 
-func getCFG(_ cond: Condition) -> CFG {
+func getCFG(_ cond: Condition) -> PartialCFG {
   switch cond {
     case .expression(let e):
       let node = BasicBlock(
         range: e.sourceRange,
         type: .condition
       )
-      return CFG(
+      return PartialCFG(
         nodes: [node],
         edges: [
           node: [.conditionFail, .conditionHold]
@@ -291,12 +291,12 @@ func getCFG(_ cond: Condition) -> CFG {
     case .let(_, _), .var(_, _):
       fatalError("optional binding not supported")
   }
-  return CFG.empty
+  return PartialCFG.empty
 }
-func getCFG(_ conds: [Condition]) -> CFG {
-  return CFG(
+func getCFG(_ conds: [Condition]) -> PartialCFG {
+  return PartialCFG(
     chainingCFGs: conds.map { getCFG($0) },
-    withContext: { (currentCfg: CFG, nextCfg: CFG?) in
+    withContext: { (currentCfg: PartialCFG, nextCfg: PartialCFG?) in
       [
         .conditionHold: nextCfg?.entryPoint ?? .conditionHold
       ]
@@ -304,7 +304,7 @@ func getCFG(_ conds: [Condition]) -> CFG {
   )
 }
 
-func getPatternChainCFG(_ switchCase: SwitchStatement.Case) -> CFG {
+func getPatternChainCFG(_ switchCase: SwitchStatement.Case) -> PartialCFG {
   switch switchCase {
   case .`case`(let items, _):
     for item in items {
@@ -313,7 +313,7 @@ func getPatternChainCFG(_ switchCase: SwitchStatement.Case) -> CFG {
       }
     }
 
-    return CFG(
+    return PartialCFG(
       chainingCFGs: items.map { getCFG($0.pattern) },
       withContext: { currentPattern, nextPattern in 
         [
@@ -325,7 +325,7 @@ func getPatternChainCFG(_ switchCase: SwitchStatement.Case) -> CFG {
     )
   case .`default`(_):
     // Everything matches the default case in a switch statement
-    return CFG(
+    return PartialCFG(
       nodes: [],
       edges: [:],
       entryPoint: .patternMatch
@@ -333,7 +333,7 @@ func getPatternChainCFG(_ switchCase: SwitchStatement.Case) -> CFG {
   }
 }
 
-func getBodyCFG(_ switchCase: SwitchStatement.Case) -> CFG {
+func getBodyCFG(_ switchCase: SwitchStatement.Case) -> PartialCFG {
   let statements: [Statement]
   switch switchCase {
     case .`case`(_, let foundStatements): 
