@@ -19,7 +19,7 @@ extension BasicBlock {
         label += "\\n"
         label += contents 
 
-        let references = self.references()
+        let references = self.references
         if !references.isEmpty {
           label += "\\nRefs:"
           for reference in references {
@@ -28,7 +28,7 @@ extension BasicBlock {
           }
         }
 
-        let definitions = self.definitions()
+        let definitions = self.definitions
         if !definitions.isEmpty {
           label += "\\nDefs:"
           for definition in definitions {

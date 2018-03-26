@@ -28,7 +28,7 @@ public class BasicBlock {
   }
 
   /// Lists all the symbols that are defined in this block
-  public func definitions() -> Set<USR> {
+  lazy var definitions: Set<USR> = {
     guard self.type != .start && self.type != .end else {
       return Set<USR>()
     }
@@ -69,10 +69,10 @@ public class BasicBlock {
     }
 
     return definitions
-  }
+  }()
 
   /// Lists all the symbols that are referred to in this block
-  public func references() -> Set<USR> {
+  lazy var references: Set<USR> = {
      guard self.type != .start && self.type != .end else {
       return Set<USR>()
     }
@@ -106,7 +106,7 @@ public class BasicBlock {
     }
 
     return references
-  }
+  }()
 
   public func getCursorInfo(filePath: String, offset: Int64) -> [String: SourceKitRepresentable] {
   let req = Request.cursorInfo(file: filePath, offset: offset, arguments: [filePath])

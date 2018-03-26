@@ -105,7 +105,7 @@ public enum PDGEdge: Hashable {
 public func findDataDependents(of startPoint: BasicBlock, inCFG cfg: CompleteCFG) -> Set<BasicBlock> {
   var dependents = Set<BasicBlock>()
 
-  for definitionUSR in startPoint.definitions() {
+  for definitionUSR in startPoint.definitions {
     var expansionQueue = Queue<BasicBlock>()
     var visitedNodes = Set<BasicBlock>()
 
@@ -117,12 +117,12 @@ public func findDataDependents(of startPoint: BasicBlock, inCFG cfg: CompleteCFG
       visitedNodes.insert(currentNode)
 
       // If I reference the definition, add me to the dependents
-      if currentNode.references().contains(definitionUSR) {
+      if currentNode.references.contains(definitionUSR) {
         dependents.insert(currentNode)
       }
 
       // If I redefine the definition, do not visit my children
-      guard !currentNode.definitions().contains(definitionUSR) else { continue }
+      guard !currentNode.definitions.contains(definitionUSR) else { continue }
 
       // Enqueue all my children that haven't been seen already
       for nextNode in cfg.edges[currentNode] ?? [] {
