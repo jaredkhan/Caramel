@@ -6,7 +6,7 @@ var i = 1
 while i < n {
   sum = sum + i
   product = product * i
-  i = i+1
+  i = i + 1
 }
 
 print(product)

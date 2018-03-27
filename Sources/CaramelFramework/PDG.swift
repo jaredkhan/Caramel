@@ -2,17 +2,25 @@ import Foundation
 
 /// Program Dependence Graph
 /// Edges are dependencies between nodes (either data or control dependencies)
-public class PDG {
+public class PDG: Equatable {
   public let nodes: Set<Node>
   public let edges: [Node: Set<PDGEdge>]
   public let reverseEdges: [Node: Set<PDGEdge>]
   public let start: Node
+
+  init(nodes: Set<Node>, edges: [Node: Set<PDGEdge>], reverseEdges: [Node: Set<PDGEdge>], start: Node) {
+    self.nodes = nodes
+    self.edges = edges
+    self.reverseEdges = reverseEdges
+    self.start = start
+  }
 
   public init(cfg: CompleteCFG) {
     var nodes = Set<Node>()
     var edges = [Node: Set<PDGEdge>]()
     var reverseEdges = [Node: Set<PDGEdge>]()
     for node in cfg.nodes {
+      guard node != cfg.end else { continue }
       edges[node] = []
       reverseEdges[node] = []
     }
@@ -92,6 +100,24 @@ public class PDG {
       $0.range.end.line >= line &&
       $0.range.end.column >= column
     }).map { slice(criterion: $0) }
+  }
+
+  private static func edgesMatch(_ lhs: PDG, _ rhs: PDG) -> Bool {
+    if lhs.edges.count != rhs.edges.count { return false }
+    for key in lhs.edges.keys {
+      if lhs.edges[key] != rhs.edges[key] { return false }
+    }
+    
+    if lhs.reverseEdges.count != rhs.reverseEdges.count { return false }
+    for key in lhs.reverseEdges.keys {
+      if lhs.reverseEdges[key] != rhs.reverseEdges[key] { return false }
+    }
+    return true
+  }
+
+  public static func == (lhs: PDG, rhs: PDG) -> Bool {
+
+    return lhs.nodes == rhs.nodes && edgesMatch(lhs, rhs) && lhs.start == rhs.start
   }
 }
 
