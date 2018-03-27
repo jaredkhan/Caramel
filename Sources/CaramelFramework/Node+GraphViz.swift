@@ -1,6 +1,6 @@
 // This file adds GraphViz 'dot' support to BasicBlocks
 
-extension BasicBlock {
+extension Node {
   var graphVizIdentifier: String {
     return "\(type)_\(range.start.line)_\(range.start.column)_\(range.end.line)_\(range.end.column)"
   }

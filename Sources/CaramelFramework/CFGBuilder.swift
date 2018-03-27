@@ -27,46 +27,46 @@ func getCFG(_ stmt: Statement) -> PartialCFG {
   // Check type of statement
   switch stmt {
     case let n as ConstantDeclaration: 
-      let block = BasicBlock(range: n.sourceRange, type: .expression)
+      let node = Node(range: n.sourceRange, type: .expression)
       return PartialCFG(
-        nodes: [block],
-        edges: [block: [.passiveNext]],
-        entryPoint: .basicBlock(block)
+        nodes: [node],
+        edges: [node: [.passiveNext]],
+        entryPoint: .node(node)
       )
     case let n as VariableDeclaration: 
-      let block = BasicBlock(range: n.sourceRange, type: .expression)
+      let node = Node(range: n.sourceRange, type: .expression)
       return PartialCFG(
-        nodes: [block],
-        edges: [block: [.passiveNext]],
-        entryPoint: .basicBlock(block)
+        nodes: [node],
+        edges: [node: [.passiveNext]],
+        entryPoint: .node(node)
       )
     case let n as BreakStatement: 
-      let block = BasicBlock(range: n.sourceRange, type: .breakStatement)
+      let node = Node(range: n.sourceRange, type: .breakStatement)
       return PartialCFG(
-        nodes: [block],
-        edges: [block: [.breakStatement]],
-        entryPoint: .basicBlock(block)
+        nodes: [node],
+        edges: [node: [.breakStatement]],
+        entryPoint: .node(node)
       )
     case let n as ContinueStatement: 
-      let block = BasicBlock(range: n.sourceRange, type: .continueStatement)
+      let node = Node(range: n.sourceRange, type: .continueStatement)
       return PartialCFG(
-        nodes: [block],
-        edges: [block: [.continueStatement]],
-        entryPoint: .basicBlock(block)
+        nodes: [node],
+        edges: [node: [.continueStatement]],
+        entryPoint: .node(node)
       )
     case let n as DeferStatement: 
-      let block = BasicBlock(range: n.sourceRange, type: .breakStatement)
+      let node = Node(range: n.sourceRange, type: .breakStatement)
       return PartialCFG(
-        nodes: [block],
-        edges: [block: [.breakStatement]],
-        entryPoint: .basicBlock(block)
+        nodes: [node],
+        edges: [node: [.breakStatement]],
+        entryPoint: .node(node)
       )
     case let n as FallthroughStatement: 
-      let block = BasicBlock(range: n.sourceRange, type: .fallthroughStatement)
+      let node = Node(range: n.sourceRange, type: .fallthroughStatement)
       return PartialCFG(
-        nodes: [block],
-        edges: [block: [.switchFallthrough]],
-        entryPoint: .basicBlock(block)
+        nodes: [node],
+        edges: [node: [.switchFallthrough]],
+        entryPoint: .node(node)
       )
     case let n as ForInStatement: 
       // The control flow for a for in loop goes as follows:
@@ -175,7 +175,7 @@ func getCFG(_ stmt: Statement) -> PartialCFG {
         edges: [
           subject: [cases[0].patternChainCFG.entryPoint]
         ],
-        entryPoint: .basicBlock(subject)
+        entryPoint: .node(subject)
       ).merging(with: cases.map { $0.patternChainCFG } + cases.map { $0.bodyCFG } )
     case let n as WhileStatement: 
       let conditionListCFG = getCFG(n.conditionList)
@@ -220,16 +220,16 @@ func getCFG(_ stmt: Statement) -> PartialCFG {
   }
 }
 
-func getNode(_ expr: Expression) -> BasicBlock {
+func getNode(_ expr: Expression) -> Node {
   switch expr {
     case let assignment as AssignmentOperatorExpression:
-      return BasicBlock(
+      return Node(
         range: expr.sourceRange,
         type: .expression,
         defRange: assignment.leftExpression.sourceRange
       )
     default:
-      return BasicBlock(
+      return Node(
         range: expr.sourceRange,
         type: .expression
       )
@@ -243,7 +243,7 @@ func getCFG(_ expr: Expression) -> PartialCFG {
   return PartialCFG(
     nodes: [node],
     edges: [node: [.passiveNext]],
-    entryPoint: .basicBlock(node)
+    entryPoint: .node(node)
   )
 }
 
@@ -257,7 +257,7 @@ func getCFG(_ elseClause: IfStatement.ElseClause) -> PartialCFG {
 }
 
 func getCFG(_ pattern: Pattern) -> PartialCFG {
-  let node = BasicBlock(
+  let node = Node(
     range: pattern.sourceRange,
     type: .pattern
   )
@@ -266,14 +266,14 @@ func getCFG(_ pattern: Pattern) -> PartialCFG {
     edges: [
       node: [.patternMatch, .patternNotMatch]
     ],
-    entryPoint: .basicBlock(node)
+    entryPoint: .node(node)
   )
 }
 
 func getCFG(_ cond: Condition) -> PartialCFG {
   switch cond {
     case .expression(let e):
-      let node = BasicBlock(
+      let node = Node(
         range: e.sourceRange,
         type: .condition
       )
@@ -282,7 +282,7 @@ func getCFG(_ cond: Condition) -> PartialCFG {
         edges: [
           node: [.conditionFail, .conditionHold]
         ],
-        entryPoint: .basicBlock(node)
+        entryPoint: .node(node)
       )
     case .availability(_):
       fatalError("availability conditions not supported")

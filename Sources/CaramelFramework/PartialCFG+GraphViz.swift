@@ -15,7 +15,7 @@ public extension PartialCFG {
     for (node, outgoingEdges) in edges {
       for outgoingEdge in outgoingEdges {
         switch outgoingEdge {
-          case .basicBlock(let nextBlock): 
+          case .node(let nextBlock): 
             result += "\(node.graphVizIdentifier) -> \(nextBlock.graphVizIdentifier);"
           case .passiveNext:
             result += "\(node.graphVizIdentifier) -> END;"

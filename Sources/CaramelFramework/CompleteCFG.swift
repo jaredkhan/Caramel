@@ -5,18 +5,18 @@ import Source
 
 /// Represents the Control Flow Graph of a complete, well-formed program
 public class CompleteCFG: Equatable {
-  public let nodes: Set<BasicBlock>
-  public let edges: [BasicBlock: Set<BasicBlock>]
-  public let reverseEdges: [BasicBlock: Set<BasicBlock>]
-  public let start: BasicBlock
-  public let end: BasicBlock
+  public let nodes: Set<Node>
+  public let edges: [Node: Set<Node>]
+  public let reverseEdges: [Node: Set<Node>]
+  public let start: Node
+  public let end: Node
 
   public init(
-    nodes: Set<BasicBlock>,
-    edges: [BasicBlock: Set<BasicBlock>],
-    reverseEdges: [BasicBlock: Set<BasicBlock>],
-    start: BasicBlock,
-    end: BasicBlock
+    nodes: Set<Node>,
+    edges: [Node: Set<Node>],
+    reverseEdges: [Node: Set<Node>],
+    start: Node,
+    end: Node
   ) {
     self.nodes = nodes
     self.edges = edges
@@ -28,27 +28,27 @@ public class CompleteCFG: Equatable {
   /// Initialise a CompleteCFG from a partial CFG
   /// Complexity: O(E) time
   public init(cfg: PartialCFG) throws {
-    self.start = BasicBlock(
+    self.start = Node(
       range: SourceRange.EMPTY,
       type: .start
     )
 
-    self.end = BasicBlock(
+    self.end = Node(
       range: SourceRange.EMPTY,
       type: .end
     )
 
     self.nodes = cfg.nodes.union([start, end])
 
-    var edges = [BasicBlock: Set<BasicBlock>]()
-    var reverseEdges = [BasicBlock: Set<BasicBlock>]()
+    var edges = [Node: Set<Node>]()
+    var reverseEdges = [Node: Set<Node>]()
 
     for node in self.nodes {
       edges[node] = []
       reverseEdges[node] = []
     }
 
-    if case .basicBlock(let node) = cfg.entryPoint {
+    if case .node(let node) = cfg.entryPoint {
       edges[self.start]!.insert(node)
       reverseEdges[node]!.insert(self.start)
     }
@@ -58,7 +58,7 @@ public class CompleteCFG: Equatable {
       if nextBlocks.isEmpty { nextBlocks.insert(.passiveNext) } // Hack, make every node flow to the end node
       for nextBlock in nextBlocks {
         switch nextBlock {
-          case .basicBlock(let destination):
+          case .node(let destination):
             edges[source]!.insert(destination)
             reverseEdges[destination]!.insert(source)
           case .passiveNext:

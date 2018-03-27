@@ -1,7 +1,7 @@
 import Rainbow
 import CaramelFramework
 
-func printSlice(_ slice: Set<BasicBlock>, ofFile filePath: String) {
+func printSlice(_ slice: Set<Node>, ofFile filePath: String) {
   // Slices do not overlap
   // Order them by startoffset
   var orderedSliceNodes = slice.sorted {

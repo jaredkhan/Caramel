@@ -1,9 +1,9 @@
 /// Points to a next hop in a control flow graph
 /// For use in PartialCFGs
-public enum NextBlock {
-  case basicBlock(BasicBlock)
+public enum NextNode {
+  case node(Node)
 
-  // Next block types that need to be resolved to basic blocks
+  // Next node types that need to be resolved to actual nodes
   case passiveNext
   case switchFallthrough
   case breakStatement
@@ -19,10 +19,10 @@ public enum NextBlock {
   case patternNotMatch
 }
 
-extension NextBlock: Equatable, Hashable {
-  public static func == (lhs: NextBlock, rhs: NextBlock) -> Bool {
+extension NextNode: Equatable, Hashable {
+  public static func == (lhs: NextNode, rhs: NextNode) -> Bool {
     switch (lhs, rhs) {
-      case (.basicBlock(let lBlock), .basicBlock(let rBlock)): return lBlock == rBlock
+      case (.node(let lBlock), .node(let rBlock)): return lBlock == rBlock
       case (.passiveNext, .passiveNext): return true
       case (.switchFallthrough, .switchFallthrough): return true
       case (.breakStatement, .breakStatement): return true
@@ -42,7 +42,7 @@ extension NextBlock: Equatable, Hashable {
 
   public var hashValue: Int {
     switch self {
-      case .basicBlock(let block): return block.hashValue
+      case .node(let node): return node.hashValue
       case .passiveNext: return 2
       case .switchFallthrough: return 3
       case .breakStatement: return 4

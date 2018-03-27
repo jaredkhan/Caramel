@@ -11,28 +11,28 @@ class PartialCFGTests: XCTestCase {
 
       let identifier = FileManager.default.currentDirectoryPath + "/" + simpleIfPath
 
-      let xAssignment = BasicBlock(
+      let xAssignment = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 1, column: 1),
           end: SourceLocation(identifier: identifier, line: 1, column: 10)
         ),
         type: .expression
       )
-      let ifCond = BasicBlock(
+      let ifCond = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 2, column: 4),
           end: SourceLocation(identifier: identifier, line: 2, column: 11)
         ),
         type: .condition
       )
-      let printHello = BasicBlock(
+      let printHello = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 3, column: 3),
           end: SourceLocation(identifier: identifier, line: 3, column: 17)
         ), 
         type: .expression
       )
-      let printGoodbye = BasicBlock(
+      let printGoodbye = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 5, column: 3),
           end: SourceLocation(identifier: identifier, line: 5, column: 19)
@@ -42,9 +42,9 @@ class PartialCFGTests: XCTestCase {
 
       let nodes = Set([xAssignment, ifCond, printHello, printGoodbye])
 
-      let edges: [BasicBlock: Set<NextBlock>] = [
-        xAssignment: [.basicBlock(ifCond)],
-        ifCond: [.basicBlock(printHello), .basicBlock(printGoodbye)],
+      let edges: [Node: Set<NextNode>] = [
+        xAssignment: [.node(ifCond)],
+        ifCond: [.node(printHello), .node(printGoodbye)],
         printHello: [.passiveNext],
         printGoodbye: [.passiveNext]
       ]
@@ -52,7 +52,7 @@ class PartialCFGTests: XCTestCase {
       let expectedCFG = PartialCFG(
         nodes: nodes,
         edges: edges,
-        entryPoint: .basicBlock(xAssignment)
+        entryPoint: .node(xAssignment)
       )
 
       if foundCFG != expectedCFG {
@@ -80,7 +80,7 @@ class PartialCFGTests: XCTestCase {
       let foundCFG = PartialCFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
 
-      let threeArray = BasicBlock(
+      let threeArray = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 1, column: 10),
           end: SourceLocation(identifier: identifier, line: 1, column: 19)
@@ -88,7 +88,7 @@ class PartialCFGTests: XCTestCase {
         type: .expression
       )
 
-      let forX1 = BasicBlock(
+      let forX1 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 1, column: 5),
           end: SourceLocation(identifier: identifier, line: 1, column: 6)
@@ -96,7 +96,7 @@ class PartialCFGTests: XCTestCase {
         type: .pattern
       )
 
-      let printX = BasicBlock(
+      let printX = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 2, column: 3),
           end: SourceLocation(identifier: identifier, line: 2, column: 11)
@@ -104,7 +104,7 @@ class PartialCFGTests: XCTestCase {
         type: .expression
       )
 
-      let break1 = BasicBlock(
+      let break1 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 3, column: 3),
           end: SourceLocation(identifier: identifier, line: 3, column: 8)
@@ -119,17 +119,17 @@ class PartialCFGTests: XCTestCase {
         break1
       ])
 
-      let edges: [BasicBlock: Set<NextBlock>] = [
-        threeArray: [.basicBlock(forX1)],
-        forX1: [.basicBlock(printX), .passiveNext],
-        printX: [.basicBlock(break1)],
+      let edges: [Node: Set<NextNode>] = [
+        threeArray: [.node(forX1)],
+        forX1: [.node(printX), .passiveNext],
+        printX: [.node(break1)],
         break1: [.passiveNext]
       ]
 
       let expectedCFG = PartialCFG(
         nodes: nodes,
         edges: edges,
-        entryPoint: .basicBlock(threeArray)
+        entryPoint: .node(threeArray)
       )
 
       if foundCFG != expectedCFG {
@@ -157,7 +157,7 @@ class PartialCFGTests: XCTestCase {
       let foundCFG = PartialCFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
 
-      let falseWhileCond = BasicBlock(
+      let falseWhileCond = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 1, column: 7),
           end: SourceLocation(identifier: identifier, line: 1, column: 12)
@@ -165,7 +165,7 @@ class PartialCFGTests: XCTestCase {
         type: .condition
       )
 
-      let break2 = BasicBlock(
+      let break2 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 2, column: 3),
           end: SourceLocation(identifier: identifier, line: 2, column: 8)
@@ -178,15 +178,15 @@ class PartialCFGTests: XCTestCase {
         break2
       ])
 
-      let edges: [BasicBlock: Set<NextBlock>] = [
-        falseWhileCond: [.basicBlock(break2), .passiveNext],
+      let edges: [Node: Set<NextNode>] = [
+        falseWhileCond: [.node(break2), .passiveNext],
         break2: [.passiveNext]
       ]
 
       let expectedCFG = PartialCFG(
         nodes: nodes,
         edges: edges,
-        entryPoint: .basicBlock(falseWhileCond)
+        entryPoint: .node(falseWhileCond)
       )
 
       if foundCFG != expectedCFG {
@@ -210,7 +210,7 @@ class PartialCFGTests: XCTestCase {
       let foundCFG = PartialCFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
 
-      let threeRange = BasicBlock(
+      let threeRange = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 1, column: 10),
           end: SourceLocation(identifier: identifier, line: 1, column: 17)
@@ -218,7 +218,7 @@ class PartialCFGTests: XCTestCase {
         type: .expression
       )
 
-      let forX2 = BasicBlock(
+      let forX2 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 1, column: 5),
           end: SourceLocation(identifier: identifier, line: 1, column: 6)
@@ -226,7 +226,7 @@ class PartialCFGTests: XCTestCase {
         type: .pattern
       )
 
-      let continue1 = BasicBlock(
+      let continue1 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 2, column: 3),
           end: SourceLocation(identifier: identifier, line: 2, column: 11)
@@ -240,16 +240,16 @@ class PartialCFGTests: XCTestCase {
         continue1
       ])
 
-      let edges: [BasicBlock: Set<NextBlock>] = [
-        threeRange: [.basicBlock(forX2)],
-        forX2: [.basicBlock(continue1), .passiveNext],
-        continue1: [.basicBlock(forX2)],
+      let edges: [Node: Set<NextNode>] = [
+        threeRange: [.node(forX2)],
+        forX2: [.node(continue1), .passiveNext],
+        continue1: [.node(forX2)],
       ]
 
       let expectedCFG = PartialCFG(
         nodes: nodes,
         edges: edges,
-        entryPoint: .basicBlock(threeRange)
+        entryPoint: .node(threeRange)
       )
 
       if foundCFG != expectedCFG {
@@ -275,7 +275,7 @@ class PartialCFGTests: XCTestCase {
       let foundCFG = PartialCFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
 
-      let oneGreaterThanTwo = BasicBlock(
+      let oneGreaterThanTwo = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 1, column: 7),
           end: SourceLocation(identifier: identifier, line: 1, column: 12)
@@ -283,7 +283,7 @@ class PartialCFGTests: XCTestCase {
         type: .condition
       )
 
-      let continue2 = BasicBlock(
+      let continue2 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 2, column: 3),
           end: SourceLocation(identifier: identifier, line: 2, column: 11)
@@ -296,15 +296,15 @@ class PartialCFGTests: XCTestCase {
         continue2,
       ])
 
-      let edges: [BasicBlock: Set<NextBlock>] = [
-        oneGreaterThanTwo: [.basicBlock(continue2), .passiveNext],
-        continue2: [.basicBlock(oneGreaterThanTwo)]
+      let edges: [Node: Set<NextNode>] = [
+        oneGreaterThanTwo: [.node(continue2), .passiveNext],
+        continue2: [.node(oneGreaterThanTwo)]
       ]
 
       let expectedCFG = PartialCFG(
         nodes: nodes,
         edges: edges,
-        entryPoint: .basicBlock(oneGreaterThanTwo)
+        entryPoint: .node(oneGreaterThanTwo)
       )
 
       if foundCFG != expectedCFG {
@@ -328,7 +328,7 @@ class PartialCFGTests: XCTestCase {
       let foundCFG = PartialCFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
 
-      let guardCond = BasicBlock(
+      let guardCond = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 1, column: 7),
           end: SourceLocation(identifier: identifier, line: 1, column: 12)
@@ -336,7 +336,7 @@ class PartialCFGTests: XCTestCase {
         type: .condition
       )
 
-      let fatalDead = BasicBlock(
+      let fatalDead = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 1, column: 20),
           end: SourceLocation(identifier: identifier, line: 1, column: 38)
@@ -349,15 +349,15 @@ class PartialCFGTests: XCTestCase {
         fatalDead,
       ])
 
-      let edges: [BasicBlock: Set<NextBlock>] = [
-        guardCond: [.passiveNext, .basicBlock(fatalDead)],
+      let edges: [Node: Set<NextNode>] = [
+        guardCond: [.passiveNext, .node(fatalDead)],
         fatalDead: [],
       ]
 
       let expectedCFG = PartialCFG(
         nodes: nodes,
         edges: edges,
-        entryPoint: .basicBlock(guardCond)
+        entryPoint: .node(guardCond)
       )
 
       if foundCFG != expectedCFG {
@@ -381,7 +381,7 @@ class PartialCFGTests: XCTestCase {
       let foundCFG = PartialCFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
 
-      let switchSubject = BasicBlock(
+      let switchSubject = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 1, column: 8),
           end: SourceLocation(identifier: identifier, line: 1, column: 9)
@@ -389,7 +389,7 @@ class PartialCFGTests: XCTestCase {
         type: .expression
       )
 
-      let case1 = BasicBlock(
+      let case1 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 2, column: 8),
           end: SourceLocation(identifier: identifier, line: 2, column: 9)
@@ -397,7 +397,7 @@ class PartialCFGTests: XCTestCase {
         type: .pattern
       )
 
-      let case2 = BasicBlock(
+      let case2 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 2, column: 11),
           end: SourceLocation(identifier: identifier, line: 2, column: 12)
@@ -405,7 +405,7 @@ class PartialCFGTests: XCTestCase {
         type: .pattern
       )
 
-      let printOne = BasicBlock(
+      let printOne = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 3, column: 5),
           end: SourceLocation(identifier: identifier, line: 3, column: 18)
@@ -413,7 +413,7 @@ class PartialCFGTests: XCTestCase {
         type: .expression
       )
 
-      let fallthroughStmt = BasicBlock(
+      let fallthroughStmt = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 4, column: 5),
           end: SourceLocation(identifier: identifier, line: 4, column: 16)
@@ -421,7 +421,7 @@ class PartialCFGTests: XCTestCase {
         type: .fallthroughStatement
       )
 
-      let case3 = BasicBlock(
+      let case3 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 5, column: 8),
           end: SourceLocation(identifier: identifier, line: 5, column: 9)
@@ -429,7 +429,7 @@ class PartialCFGTests: XCTestCase {
         type: .pattern
       )
 
-      let break4 = BasicBlock(
+      let break4 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 6, column: 5),
           end: SourceLocation(identifier: identifier, line: 6, column: 10)
@@ -437,7 +437,7 @@ class PartialCFGTests: XCTestCase {
         type: .breakStatement
       )
 
-      let printNope = BasicBlock(
+      let printNope = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 7, column: 12),
           end: SourceLocation(identifier: identifier, line: 7, column: 25)
@@ -456,13 +456,13 @@ class PartialCFGTests: XCTestCase {
         printNope
       ])
 
-      let edges: [BasicBlock: Set<NextBlock>] = [
-        switchSubject: [.basicBlock(case1)],
-        case1: [.basicBlock(printOne), .basicBlock(case2)],
-        case2: [.basicBlock(printOne), .basicBlock(case3)],
-        printOne: [.basicBlock(fallthroughStmt)],
-        fallthroughStmt: [.basicBlock(break4)],
-        case3: [.basicBlock(break4), .basicBlock(printNope)],
+      let edges: [Node: Set<NextNode>] = [
+        switchSubject: [.node(case1)],
+        case1: [.node(printOne), .node(case2)],
+        case2: [.node(printOne), .node(case3)],
+        printOne: [.node(fallthroughStmt)],
+        fallthroughStmt: [.node(break4)],
+        case3: [.node(break4), .node(printNope)],
         break4: [.passiveNext],
         printNope: [.passiveNext]
       ]
@@ -470,7 +470,7 @@ class PartialCFGTests: XCTestCase {
       let expectedCFG = PartialCFG(
         nodes: nodes,
         edges: edges,
-        entryPoint: .basicBlock(switchSubject)
+        entryPoint: .node(switchSubject)
       )
 
       if foundCFG != expectedCFG {
@@ -488,7 +488,7 @@ class PartialCFGTests: XCTestCase {
       let foundCFG = PartialCFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
 
-      let printHi = BasicBlock(
+      let printHi = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 2, column: 3),
           end: SourceLocation(identifier: identifier, line: 2, column: 14)
@@ -496,7 +496,7 @@ class PartialCFGTests: XCTestCase {
         type: .expression
       )
 
-      let trueIfCond = BasicBlock(
+      let trueIfCond = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 3, column: 6),
           end: SourceLocation(identifier: identifier, line: 3, column: 10)
@@ -504,7 +504,7 @@ class PartialCFGTests: XCTestCase {
         type: .condition
       )
 
-      let break3 = BasicBlock(
+      let break3 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 3, column: 13),
           end: SourceLocation(identifier: identifier, line: 3, column: 18)
@@ -512,7 +512,7 @@ class PartialCFGTests: XCTestCase {
         type: .breakStatement
       )
 
-      let repeatWhileCond = BasicBlock(
+      let repeatWhileCond = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 4, column: 9),
           end: SourceLocation(identifier: identifier, line: 4, column: 14)
@@ -527,17 +527,17 @@ class PartialCFGTests: XCTestCase {
         repeatWhileCond
       ])
 
-      let edges: [BasicBlock: Set<NextBlock>] = [
-        printHi: [.basicBlock(trueIfCond)],
-        trueIfCond: [.basicBlock(break3), .basicBlock(repeatWhileCond)],
-        break3: [.basicBlock(repeatWhileCond)],
-        repeatWhileCond: [.passiveNext, .basicBlock(printHi)],
+      let edges: [Node: Set<NextNode>] = [
+        printHi: [.node(trueIfCond)],
+        trueIfCond: [.node(break3), .node(repeatWhileCond)],
+        break3: [.node(repeatWhileCond)],
+        repeatWhileCond: [.passiveNext, .node(printHi)],
       ]
 
       let expectedCFG = PartialCFG(
         nodes: nodes,
         edges: edges,
-        entryPoint: .basicBlock(printHi)
+        entryPoint: .node(printHi)
       )
 
       if foundCFG != expectedCFG {
@@ -555,7 +555,7 @@ class PartialCFGTests: XCTestCase {
       let foundCFG = PartialCFG(contentsOfFile: filePath)
       let identifier = FileManager.default.currentDirectoryPath + "/" + filePath
 
-      let myVarDeclaration = BasicBlock(
+      let myVarDeclaration = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 1, column: 1),
           end: SourceLocation(identifier: identifier, line: 1, column: 14)
@@ -563,7 +563,7 @@ class PartialCFGTests: XCTestCase {
         type: .expression
       )
 
-      let patternConstDeclaration = BasicBlock(
+      let patternConstDeclaration = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 3, column: 1),
           end: SourceLocation(identifier: identifier, line: 3, column: 34)
@@ -571,7 +571,7 @@ class PartialCFGTests: XCTestCase {
         type: .expression
       )
 
-      let myVarInc = BasicBlock(
+      let myVarInc = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 5, column: 1),
           end: SourceLocation(identifier: identifier, line: 5, column: 18)
@@ -583,7 +583,7 @@ class PartialCFGTests: XCTestCase {
         )
       )
 
-      let ifCond1 = BasicBlock(
+      let ifCond1 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 7, column: 4),
           end: SourceLocation(identifier: identifier, line: 7, column: 8)
@@ -591,7 +591,7 @@ class PartialCFGTests: XCTestCase {
         type: .condition
       )
 
-      let printHello = BasicBlock(
+      let printHello = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 8, column: 3),
           end: SourceLocation(identifier: identifier, line: 8, column: 17)
@@ -599,7 +599,7 @@ class PartialCFGTests: XCTestCase {
         type: .expression
       )
 
-      let setMyVar = BasicBlock(
+      let setMyVar = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 9, column: 3),
           end: SourceLocation(identifier: identifier, line: 9, column: 12)
@@ -611,7 +611,7 @@ class PartialCFGTests: XCTestCase {
         )
       )
 
-      let xDecl = BasicBlock(
+      let xDecl = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 10, column: 3),
           end: SourceLocation(identifier: identifier, line: 10, column: 12)
@@ -619,7 +619,7 @@ class PartialCFGTests: XCTestCase {
         type: .expression
       )
 
-      let ifCond2 = BasicBlock(
+      let ifCond2 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 11, column: 11),
           end: SourceLocation(identifier: identifier, line: 11, column: 15)
@@ -627,7 +627,7 @@ class PartialCFGTests: XCTestCase {
         type: .condition
       )
 
-      let printGoodbye = BasicBlock(
+      let printGoodbye = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 12, column: 3),
           end: SourceLocation(identifier: identifier, line: 12, column: 19)
@@ -635,7 +635,7 @@ class PartialCFGTests: XCTestCase {
         type: .expression
       )
 
-      let ifCond3 = BasicBlock(
+      let ifCond3 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 13, column: 11),
           end: SourceLocation(identifier: identifier, line: 13, column: 15)
@@ -643,7 +643,7 @@ class PartialCFGTests: XCTestCase {
         type: .condition
       )
 
-      let ifCond4 = BasicBlock(
+      let ifCond4 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 13, column: 17),
           end: SourceLocation(identifier: identifier, line: 13, column: 21)
@@ -651,7 +651,7 @@ class PartialCFGTests: XCTestCase {
         type: .condition
       )
 
-      let ifCond5 = BasicBlock(
+      let ifCond5 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 13, column: 23),
           end: SourceLocation(identifier: identifier, line: 13, column: 27)
@@ -659,7 +659,7 @@ class PartialCFGTests: XCTestCase {
         type: .condition
       )
 
-      let printWoah = BasicBlock(
+      let printWoah = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 14, column: 3),
           end: SourceLocation(identifier: identifier, line: 14, column: 17)
@@ -667,7 +667,7 @@ class PartialCFGTests: XCTestCase {
         type: .expression
       )
 
-      let threeArray = BasicBlock(
+      let threeArray = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 17, column: 10),
           end: SourceLocation(identifier: identifier, line: 17, column: 19)
@@ -675,7 +675,7 @@ class PartialCFGTests: XCTestCase {
         type: .expression
       )
 
-      let forX1 = BasicBlock(
+      let forX1 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 17, column: 5),
           end: SourceLocation(identifier: identifier, line: 17, column: 6)
@@ -683,7 +683,7 @@ class PartialCFGTests: XCTestCase {
         type: .pattern
       )
 
-      let printX = BasicBlock(
+      let printX = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 18, column: 3),
           end: SourceLocation(identifier: identifier, line: 18, column: 11)
@@ -691,7 +691,7 @@ class PartialCFGTests: XCTestCase {
         type: .expression
       )
 
-      let break1 = BasicBlock(
+      let break1 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 19, column: 3),
           end: SourceLocation(identifier: identifier, line: 19, column: 8)
@@ -699,7 +699,7 @@ class PartialCFGTests: XCTestCase {
         type: .breakStatement
       )
 
-      let threeRange = BasicBlock(
+      let threeRange = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 22, column: 10),
           end: SourceLocation(identifier: identifier, line: 22, column: 17)
@@ -707,7 +707,7 @@ class PartialCFGTests: XCTestCase {
         type: .expression
       )
 
-      let forX2 = BasicBlock(
+      let forX2 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 22, column: 5),
           end: SourceLocation(identifier: identifier, line: 22, column: 6)
@@ -715,7 +715,7 @@ class PartialCFGTests: XCTestCase {
         type: .pattern
       )
 
-      let continue1 = BasicBlock(
+      let continue1 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 23, column: 3),
           end: SourceLocation(identifier: identifier, line: 23, column: 11)
@@ -723,7 +723,7 @@ class PartialCFGTests: XCTestCase {
         type: .continueStatement
       )
 
-      let oneGreaterThanTwo = BasicBlock(
+      let oneGreaterThanTwo = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 26, column: 7),
           end: SourceLocation(identifier: identifier, line: 26, column: 12)
@@ -731,7 +731,7 @@ class PartialCFGTests: XCTestCase {
         type: .condition
       )
 
-      let continue2 = BasicBlock(
+      let continue2 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 27, column: 3),
           end: SourceLocation(identifier: identifier, line: 27, column: 11)
@@ -739,7 +739,7 @@ class PartialCFGTests: XCTestCase {
         type: .continueStatement
       )
 
-      let falseWhileCond = BasicBlock(
+      let falseWhileCond = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 30, column: 7),
           end: SourceLocation(identifier: identifier, line: 30, column: 12)
@@ -747,7 +747,7 @@ class PartialCFGTests: XCTestCase {
         type: .condition
       )
 
-      let break2 = BasicBlock(
+      let break2 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 31, column: 3),
           end: SourceLocation(identifier: identifier, line: 31, column: 8)
@@ -755,7 +755,7 @@ class PartialCFGTests: XCTestCase {
         type: .breakStatement
       )
 
-      let printHi = BasicBlock(
+      let printHi = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 35, column: 3),
           end: SourceLocation(identifier: identifier, line: 35, column: 14)
@@ -763,7 +763,7 @@ class PartialCFGTests: XCTestCase {
         type: .expression
       )
 
-      let trueIfCond = BasicBlock(
+      let trueIfCond = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 36, column: 6),
           end: SourceLocation(identifier: identifier, line: 36, column: 10)
@@ -771,7 +771,7 @@ class PartialCFGTests: XCTestCase {
         type: .condition
       )
 
-      let break3 = BasicBlock(
+      let break3 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 36, column: 13),
           end: SourceLocation(identifier: identifier, line: 36, column: 18)
@@ -779,7 +779,7 @@ class PartialCFGTests: XCTestCase {
         type: .breakStatement
       )
 
-      let repeatWhileCond = BasicBlock(
+      let repeatWhileCond = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 37, column: 9),
           end: SourceLocation(identifier: identifier, line: 37, column: 14)
@@ -787,7 +787,7 @@ class PartialCFGTests: XCTestCase {
         type: .condition
       )
 
-      let guardCond = BasicBlock(
+      let guardCond = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 39, column: 7),
           end: SourceLocation(identifier: identifier, line: 39, column: 12)
@@ -795,7 +795,7 @@ class PartialCFGTests: XCTestCase {
         type: .condition
       )
 
-      let fatalDead = BasicBlock(
+      let fatalDead = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 39, column: 20),
           end: SourceLocation(identifier: identifier, line: 39, column: 38)
@@ -803,7 +803,7 @@ class PartialCFGTests: XCTestCase {
         type: .expression
       )
 
-      let switchSubject = BasicBlock(
+      let switchSubject = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 41, column: 8),
           end: SourceLocation(identifier: identifier, line: 41, column: 9)
@@ -811,7 +811,7 @@ class PartialCFGTests: XCTestCase {
         type: .expression
       )
 
-      let case1 = BasicBlock(
+      let case1 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 42, column: 8),
           end: SourceLocation(identifier: identifier, line: 42, column: 9)
@@ -819,7 +819,7 @@ class PartialCFGTests: XCTestCase {
         type: .pattern
       )
 
-      let case2 = BasicBlock(
+      let case2 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 42, column: 11),
           end: SourceLocation(identifier: identifier, line: 42, column: 12)
@@ -827,7 +827,7 @@ class PartialCFGTests: XCTestCase {
         type: .pattern
       )
 
-      let printOne = BasicBlock(
+      let printOne = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 43, column: 5),
           end: SourceLocation(identifier: identifier, line: 43, column: 18)
@@ -835,7 +835,7 @@ class PartialCFGTests: XCTestCase {
         type: .expression
       )
 
-      let fallthroughStmt = BasicBlock(
+      let fallthroughStmt = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 44, column: 5),
           end: SourceLocation(identifier: identifier, line: 44, column: 16)
@@ -843,7 +843,7 @@ class PartialCFGTests: XCTestCase {
         type: .fallthroughStatement
       )
 
-      let case3 = BasicBlock(
+      let case3 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 45, column: 8),
           end: SourceLocation(identifier: identifier, line: 45, column: 9)
@@ -851,7 +851,7 @@ class PartialCFGTests: XCTestCase {
         type: .pattern
       )
 
-      let break4 = BasicBlock(
+      let break4 = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 46, column: 5),
           end: SourceLocation(identifier: identifier, line: 46, column: 10)
@@ -859,7 +859,7 @@ class PartialCFGTests: XCTestCase {
         type: .breakStatement
       )
 
-      let printNope = BasicBlock(
+      let printNope = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 47, column: 12),
           end: SourceLocation(identifier: identifier, line: 47, column: 25)
@@ -908,43 +908,43 @@ class PartialCFGTests: XCTestCase {
         printNope
       ])
 
-      let edges: [BasicBlock: Set<NextBlock>] = [
-        myVarDeclaration: [.basicBlock(patternConstDeclaration)],
-        patternConstDeclaration: [.basicBlock(myVarInc)],
-        myVarInc: [.basicBlock(ifCond1)],
-        ifCond1: [.basicBlock(printHello), .basicBlock(ifCond2)],
-        printHello: [.basicBlock(setMyVar)],
-        setMyVar: [.basicBlock(xDecl)],
-        xDecl: [.basicBlock(threeArray)],
-        ifCond2: [.basicBlock(printGoodbye), .basicBlock(ifCond3)],
-        printGoodbye: [.basicBlock(threeArray)],
-        ifCond3: [.basicBlock(ifCond4), .basicBlock(threeArray)],
-        ifCond4: [.basicBlock(ifCond5), .basicBlock(threeArray)],
-        ifCond5: [.basicBlock(printWoah), .basicBlock(threeArray)],
-        printWoah: [.basicBlock(threeArray)],
-        threeArray: [.basicBlock(forX1)],
-        forX1: [.basicBlock(printX), .basicBlock(threeRange)],
-        printX: [.basicBlock(break1)],
-        break1: [.basicBlock(threeRange)],
-        threeRange: [.basicBlock(forX2)],
-        forX2: [.basicBlock(continue1), .basicBlock(oneGreaterThanTwo)],
-        continue1: [.basicBlock(forX2)],
-        oneGreaterThanTwo: [.basicBlock(continue2), .basicBlock(falseWhileCond)],
-        continue2: [.basicBlock(oneGreaterThanTwo)],
-        falseWhileCond: [.basicBlock(break2), .basicBlock(printHi)],
-        break2: [.basicBlock(printHi)],
-        printHi: [.basicBlock(trueIfCond)],
-        trueIfCond: [.basicBlock(break3), .basicBlock(repeatWhileCond)],
-        break3: [.basicBlock(repeatWhileCond)],
-        repeatWhileCond: [.basicBlock(guardCond), .basicBlock(printHi)],
-        guardCond: [.basicBlock(switchSubject), .basicBlock(fatalDead)],
+      let edges: [Node: Set<NextNode>] = [
+        myVarDeclaration: [.node(patternConstDeclaration)],
+        patternConstDeclaration: [.node(myVarInc)],
+        myVarInc: [.node(ifCond1)],
+        ifCond1: [.node(printHello), .node(ifCond2)],
+        printHello: [.node(setMyVar)],
+        setMyVar: [.node(xDecl)],
+        xDecl: [.node(threeArray)],
+        ifCond2: [.node(printGoodbye), .node(ifCond3)],
+        printGoodbye: [.node(threeArray)],
+        ifCond3: [.node(ifCond4), .node(threeArray)],
+        ifCond4: [.node(ifCond5), .node(threeArray)],
+        ifCond5: [.node(printWoah), .node(threeArray)],
+        printWoah: [.node(threeArray)],
+        threeArray: [.node(forX1)],
+        forX1: [.node(printX), .node(threeRange)],
+        printX: [.node(break1)],
+        break1: [.node(threeRange)],
+        threeRange: [.node(forX2)],
+        forX2: [.node(continue1), .node(oneGreaterThanTwo)],
+        continue1: [.node(forX2)],
+        oneGreaterThanTwo: [.node(continue2), .node(falseWhileCond)],
+        continue2: [.node(oneGreaterThanTwo)],
+        falseWhileCond: [.node(break2), .node(printHi)],
+        break2: [.node(printHi)],
+        printHi: [.node(trueIfCond)],
+        trueIfCond: [.node(break3), .node(repeatWhileCond)],
+        break3: [.node(repeatWhileCond)],
+        repeatWhileCond: [.node(guardCond), .node(printHi)],
+        guardCond: [.node(switchSubject), .node(fatalDead)],
         fatalDead: [],
-        switchSubject: [.basicBlock(case1)],
-        case1: [.basicBlock(printOne), .basicBlock(case2)],
-        case2: [.basicBlock(printOne), .basicBlock(case3)],
-        printOne: [.basicBlock(fallthroughStmt)],
-        fallthroughStmt: [.basicBlock(break4)],
-        case3: [.basicBlock(break4), .basicBlock(printNope)],
+        switchSubject: [.node(case1)],
+        case1: [.node(printOne), .node(case2)],
+        case2: [.node(printOne), .node(case3)],
+        printOne: [.node(fallthroughStmt)],
+        fallthroughStmt: [.node(break4)],
+        case3: [.node(break4), .node(printNope)],
         break4: [.passiveNext],
         printNope: [.passiveNext]
       ]
@@ -952,7 +952,7 @@ class PartialCFGTests: XCTestCase {
       let expectedCFG = PartialCFG(
         nodes: nodes,
         edges: edges,
-        entryPoint: .basicBlock(myVarDeclaration)
+        entryPoint: .node(myVarDeclaration)
       )
 
       if foundCFG != expectedCFG {

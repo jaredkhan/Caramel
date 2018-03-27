@@ -4,30 +4,30 @@ import AST
 
 public typealias USR = String
 
-public class BasicBlock {
+public class Node {
   public let range: SourceRange
-  public let type: BasicBlockType
-  // A range within this block of symbols being defined (e.g. on the left hand side of an assignment operator)
+  public let type: NodeType
+  // A range, within this node, of symbols being defined (e.g. on the left hand side of an assignment operator)
   let defRange: SourceRange?
 
-  init(range: SourceRange, type: BasicBlockType, defRange: SourceRange? = nil) {
+  init(range: SourceRange, type: NodeType, defRange: SourceRange? = nil) {
     self.range = range
     self.type = type
     self.defRange = defRange
   }
 
-  // If we are getting the PartialCFG of a BasicBlock directly,
-  // then we just want a wrapper that has this basic block as an entry point and moves on
+  // If we are getting the PartialCFG of a Node directly,
+  // then we just want a wrapper that has this node as an entry point and moves on
   // TODO: Implement guard, break etc.
   func getCFG() -> PartialCFG {
     return PartialCFG(
       nodes: [self],
       edges: [self: [.passiveNext]],
-      entryPoint: .basicBlock(self)
+      entryPoint: .node(self)
     )
   }
 
-  /// Lists all the symbols that are defined in this block
+  /// Lists all the symbols that are defined in this node
   lazy var definitions: Set<USR> = {
     guard self.type != .start && self.type != .end else {
       return Set<USR>()
@@ -38,7 +38,7 @@ public class BasicBlock {
     return definitions.union(declarations)
   }()
 
-  /// Lists all the symbols that are referred to in this block
+  /// Lists all the symbols that are referred to in this node
   lazy var references: Set<USR> = {
      guard self.type != .start && self.type != .end else {
       return Set<USR>()
@@ -48,8 +48,8 @@ public class BasicBlock {
   }()
 }
 
-extension BasicBlock: Hashable {
-  public static func == (lhs: BasicBlock, rhs: BasicBlock) -> Bool {
+extension Node: Hashable {
+  public static func == (lhs: Node, rhs: Node) -> Bool {
     return (lhs.range, lhs.type) == (rhs.range, rhs.type) && lhs.defRange == rhs.defRange
   }
 
@@ -58,10 +58,10 @@ extension BasicBlock: Hashable {
   }
 }
 
-public enum BasicBlockType {
-  /// Synthesized start block for the CFG
+public enum NodeType {
+  /// Synthesized start node for the CFG
   case start
-  /// Synthesized end block for the CFG
+  /// Synthesized end node for the CFG
   case end
   case condition
   case breakStatement

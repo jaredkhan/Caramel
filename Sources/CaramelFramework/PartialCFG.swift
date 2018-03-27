@@ -4,18 +4,17 @@ import Sema
 import Source
 
 /// Partial Control Flow Graph
-/// Nodes are basic blocks. Edges are directed and point to possible next blocks
-/// This graph is 'partial' in the sense that it does not contain the start and end blocks
+/// This graph is 'partial' in the sense that it does not contain the start and end nodes
 /// and may have unresolved edges.
 public struct PartialCFG: Equatable {
-  public let nodes: Set<BasicBlock>
-  public var edges: [BasicBlock: Set<NextBlock>]
-  public var entryPoint: NextBlock
+  public let nodes: Set<Node>
+  public var edges: [Node: Set<NextNode>]
+  public var entryPoint: NextNode
 
   // Resolve NextBlocks to other NextBlocks
   // e.g. resolving a .passiveNext to a basicBlock
   // e.g. resolving a .breakStatement to a .passiveNext
-  mutating func apply(context: [NextBlock: NextBlock?]) {
+  mutating func apply(context: [NextNode: NextNode?]) {
     edges = edges.mapValues { nextBlocks in
       Set(
         nextBlocks.flatMap { nextBlock in
@@ -29,7 +28,7 @@ public struct PartialCFG: Equatable {
   // Return another PartialCFG with NextBlocks resolved to other NextBlocks
   // e.g. resolving a .passiveNext to a basicBlock
   // e.g. resolving a .breakStatement to a .passiveNext
-  func applying(context: [NextBlock: NextBlock?]) -> PartialCFG {
+  func applying(context: [NextNode: NextNode?]) -> PartialCFG {
     var result = self
     result.apply(context: context)
     return result
@@ -96,7 +95,7 @@ public extension PartialCFG {
   /// Example:
   /// PartialCFG(chainingCFGs: [myCFG1, myCFG2], withContext: { [.passiveNext: $1?.entryPoint ?? .passiveNext] })
   /// This will connect the 'passiveNext' pointers of each CFG to the entry points of the next CFG in the chain
-  init(chainingCFGs cfgs: [PartialCFG], withContext context: ((PartialCFG, PartialCFG?) -> [NextBlock: NextBlock?])) {
+  init(chainingCFGs cfgs: [PartialCFG], withContext context: ((PartialCFG, PartialCFG?) -> [NextNode: NextNode?])) {
     var cfgList: [PartialCFG] = []
 
     for cfg in cfgs.reversed() {

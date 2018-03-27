@@ -1,18 +1,17 @@
 import Foundation
 
 /// Program Dependence Graph
-/// Nodes are Basic Blocks
-/// Edges are dependencies between blocks (either data or control dependencies)
+/// Edges are dependencies between nodes (either data or control dependencies)
 public class PDG {
-  public let nodes: Set<BasicBlock>
-  public let edges: [BasicBlock: Set<PDGEdge>]
-  public let reverseEdges: [BasicBlock: Set<PDGEdge>]
-  public let start: BasicBlock
+  public let nodes: Set<Node>
+  public let edges: [Node: Set<PDGEdge>]
+  public let reverseEdges: [Node: Set<PDGEdge>]
+  public let start: Node
 
   public init(cfg: CompleteCFG) {
-    var nodes = Set<BasicBlock>()
-    var edges = [BasicBlock: Set<PDGEdge>]()
-    var reverseEdges = [BasicBlock: Set<PDGEdge>]()
+    var nodes = Set<Node>()
+    var edges = [Node: Set<PDGEdge>]()
+    var reverseEdges = [Node: Set<PDGEdge>]()
     for node in cfg.nodes {
       edges[node] = []
       reverseEdges[node] = []
@@ -68,9 +67,9 @@ public class PDG {
     self.start = cfg.start
   }
 
-  public func slice(criterion: BasicBlock) -> Set<BasicBlock> {
+  public func slice(criterion: Node) -> Set<Node> {
     var remainingNodeStack = [criterion]
-    var sliceNodes = Set<BasicBlock>()
+    var sliceNodes = Set<Node>()
 
     while let currentNode = remainingNodeStack.popLast() {
       guard !sliceNodes.contains(currentNode) else { continue }
@@ -88,7 +87,7 @@ public class PDG {
     return sliceNodes
   }
 
-  public func slice(line: Int, column: Int) -> Set<BasicBlock>? {
+  public func slice(line: Int, column: Int) -> Set<Node>? {
     // Find a node whose range contains this point
     return nodes.first(where: {
       $0.range.start.line <= line &&
@@ -100,8 +99,8 @@ public class PDG {
 }
 
 public enum PDGEdge: Hashable {
-  case data(BasicBlock)
-  case control(BasicBlock)
+  case data(Node)
+  case control(Node)
 
   public static func ==(lhs: PDGEdge, rhs: PDGEdge) -> Bool {
     switch (lhs, rhs) {
@@ -113,8 +112,8 @@ public enum PDGEdge: Hashable {
 
   public var hashValue: Int {
     switch self {
-      case .data(let block): return block.hashValue << 1
-      case .control(let block): return (block.hashValue << 1) + 1
+      case .data(let node): return node.hashValue << 1
+      case .control(let node): return (node.hashValue << 1) + 1
     }
   }
 }
@@ -124,12 +123,12 @@ public enum PDGEdge: Hashable {
 /// Complexity: O(|E|d)
 /// where |E| is the number of edges in the CFG,
 /// d is the number of definitions in the given node
-public func findDataDependents(of startPoint: BasicBlock, inCFG cfg: CompleteCFG) -> Set<BasicBlock> {
-  var dependents = Set<BasicBlock>()
+public func findDataDependents(of startPoint: Node, inCFG cfg: CompleteCFG) -> Set<Node> {
+  var dependents = Set<Node>()
 
   for definitionUSR in startPoint.definitions {
-    var expansionQueue = Queue<BasicBlock>()
-    var visitedNodes = Set<BasicBlock>()
+    var expansionQueue = Queue<Node>()
+    var visitedNodes = Set<Node>()
 
     for nextNode in cfg.edges[startPoint] ?? [] {
       expansionQueue.enqueue(nextNode)
@@ -158,10 +157,10 @@ public func findDataDependents(of startPoint: BasicBlock, inCFG cfg: CompleteCFG
   return dependents
 }
 
-public func backwardPostOrderNumbering(cfg: CompleteCFG) -> (forward: [Int: BasicBlock], inverse: [BasicBlock: Int]) {
+public func backwardPostOrderNumbering(cfg: CompleteCFG) -> (forward: [Int: Node], inverse: [Node: Int]) {
   var remainingNodeStack = [cfg.end]
-  var resultStack: [BasicBlock] = []
-  var visitedNodes = Set<BasicBlock>()
+  var resultStack: [Node] = []
+  var visitedNodes = Set<Node>()
 
   while let topNode = remainingNodeStack.popLast() {
     guard !visitedNodes.contains(topNode) else { continue }
@@ -172,8 +171,8 @@ public func backwardPostOrderNumbering(cfg: CompleteCFG) -> (forward: [Int: Basi
     }
   }
 
-  var forwardMapping: [Int: BasicBlock] = [:]
-  var inverseMapping: [BasicBlock: Int] = [:]
+  var forwardMapping: [Int: Node] = [:]
+  var inverseMapping: [Node: Int] = [:]
   var index = 0
   while let node = resultStack.popLast() {
     forwardMapping[index] = node
@@ -185,7 +184,7 @@ public func backwardPostOrderNumbering(cfg: CompleteCFG) -> (forward: [Int: Basi
 
 /// Cooper, Harvey & Kennedy: A simple, fast dominance algorithm
 /// (http://www.hipersoft.rice.edu/grads/publications/dom14.pdf)
-public func buildImmediatePostdominatorTree(cfg: CompleteCFG) -> [BasicBlock: BasicBlock] {
+public func buildImmediatePostdominatorTree(cfg: CompleteCFG) -> [Node: Node] {
   let (numbering, inverseNumbering) = backwardPostOrderNumbering(cfg: cfg)
   var postdominator: [Int: Int] = [:]
 
@@ -230,7 +229,7 @@ public func buildImmediatePostdominatorTree(cfg: CompleteCFG) -> [BasicBlock: Ba
     }
   }
 
-  var resultTree: [BasicBlock: BasicBlock] = [:]
+  var resultTree: [Node: Node] = [:]
   for (nodeIndex, immediatePostdominatorIndex) in postdominator {
     resultTree[numbering[nodeIndex]!] = numbering[immediatePostdominatorIndex]! 
   }
@@ -239,8 +238,8 @@ public func buildImmediatePostdominatorTree(cfg: CompleteCFG) -> [BasicBlock: Ba
 
 /// Returns the set of nodes including the source and sink along the path from source to sink
 /// Sink is the end node since this is a postdominator tree
-private func pathToSink(inPostDominatorTree postdominatorTree: [BasicBlock: BasicBlock], from source: BasicBlock) -> Set<BasicBlock> {
-  var includedNodes: Set<BasicBlock> = [source]
+private func pathToSink(inPostDominatorTree postdominatorTree: [Node: Node], from source: Node) -> Set<Node> {
+  var includedNodes: Set<Node> = [source]
   var lastNode = source
   while let nextNode = postdominatorTree[lastNode], nextNode != lastNode {
     includedNodes.insert(nextNode)
@@ -249,12 +248,12 @@ private func pathToSink(inPostDominatorTree postdominatorTree: [BasicBlock: Basi
   return includedNodes
 }
 
-public func findControlDependents(of startPoint: BasicBlock, inCFG cfg: CompleteCFG, withPostdominatorTree postdominatorTree: [BasicBlock: BasicBlock]) -> Set<BasicBlock> {
+public func findControlDependents(of startPoint: Node, inCFG cfg: CompleteCFG, withPostdominatorTree postdominatorTree: [Node: Node]) -> Set<Node> {
   let childPostdominators = cfg.edges[startPoint]!.map { child in
     pathToSink(inPostDominatorTree: postdominatorTree, from: child)
   }
-  let allPostdominators: Set<BasicBlock> = childPostdominators.reduce([], { $0.union($1) })
-  let commonPostdominators: Set<BasicBlock> = childPostdominators.reduce(childPostdominators.first ?? [], { $0.intersection($1) })
+  let allPostdominators: Set<Node> = childPostdominators.reduce([], { $0.union($1) })
+  let commonPostdominators: Set<Node> = childPostdominators.reduce(childPostdominators.first ?? [], { $0.intersection($1) })
 
   return allPostdominators.subtracting(commonPostdominators)
 }

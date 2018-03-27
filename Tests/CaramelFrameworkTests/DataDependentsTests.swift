@@ -8,7 +8,7 @@ class DataDependentsTests: XCTestCase {
 
       let identifier = FileManager.default.currentDirectoryPath + "/" + noDependentsPath
 
-      let xZero = BasicBlock(
+      let xZero = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 1, column: 1),
           end: SourceLocation(identifier: identifier, line: 1, column: 10)
@@ -16,7 +16,7 @@ class DataDependentsTests: XCTestCase {
         type: .expression
       )
 
-      let xTwo = BasicBlock(
+      let xTwo = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 2, column: 1),
           end: SourceLocation(identifier: identifier, line: 2, column: 6)
@@ -28,7 +28,7 @@ class DataDependentsTests: XCTestCase {
         )
       )
 
-      let xThree = BasicBlock(
+      let xThree = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 3, column: 1),
           end: SourceLocation(identifier: identifier, line: 3, column: 6)
@@ -43,10 +43,10 @@ class DataDependentsTests: XCTestCase {
       let completeCFG = try! CompleteCFG(cfg: PartialCFG(
         nodes: [xZero, xTwo, xThree],
         edges: [
-          xZero: [.basicBlock(xTwo)],
-          xTwo: [.basicBlock(xThree)]
+          xZero: [.node(xTwo)],
+          xTwo: [.node(xThree)]
         ],
-        entryPoint: .basicBlock(xZero)
+        entryPoint: .node(xZero)
       ))
 
       XCTAssertEqual(findDataDependents(of: xZero, inCFG: completeCFG), [])
@@ -59,7 +59,7 @@ class DataDependentsTests: XCTestCase {
 
       let identifier = FileManager.default.currentDirectoryPath + "/" + overwritingIfPath
 
-      let xEmptyString = BasicBlock(
+      let xEmptyString = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 1, column: 1),
           end: SourceLocation(identifier: identifier, line: 1, column: 11)
@@ -67,7 +67,7 @@ class DataDependentsTests: XCTestCase {
         type: .expression
       )
 
-      let ifCond = BasicBlock(
+      let ifCond = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 3, column: 4),
           end: SourceLocation(identifier: identifier, line: 3, column: 9)
@@ -75,7 +75,7 @@ class DataDependentsTests: XCTestCase {
         type: .condition
       )
 
-      let xHello = BasicBlock(
+      let xHello = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 4, column: 3),
           end: SourceLocation(identifier: identifier, line: 4, column: 14)
@@ -87,7 +87,7 @@ class DataDependentsTests: XCTestCase {
         )
       )
 
-      let xBonjour = BasicBlock(
+      let xBonjour = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 6, column: 3),
           end: SourceLocation(identifier: identifier, line: 6, column: 16)
@@ -99,7 +99,7 @@ class DataDependentsTests: XCTestCase {
         )
       )
 
-      let printX = BasicBlock(
+      let printX = Node(
         range: SourceRange(
           start: SourceLocation(identifier: identifier, line: 9, column: 1),
           end: SourceLocation(identifier: identifier, line: 9, column: 9)
@@ -110,13 +110,13 @@ class DataDependentsTests: XCTestCase {
       let completeCFG = try! CompleteCFG(cfg: PartialCFG(
         nodes: [xEmptyString, ifCond, xHello, xBonjour, printX],
         edges: [
-          xEmptyString: [.basicBlock(ifCond)],
-          ifCond: [.basicBlock(xHello), .basicBlock(xBonjour)],
-          xHello: [.basicBlock(printX)],
-          xBonjour: [.basicBlock(printX)],
+          xEmptyString: [.node(ifCond)],
+          ifCond: [.node(xHello), .node(xBonjour)],
+          xHello: [.node(printX)],
+          xBonjour: [.node(printX)],
           printX: []
         ],
-        entryPoint: .basicBlock(xEmptyString)
+        entryPoint: .node(xEmptyString)
       ))
 
       XCTAssertEqual(findDataDependents(of: xEmptyString, inCFG: completeCFG), [])

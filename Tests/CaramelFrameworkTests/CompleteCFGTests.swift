@@ -4,9 +4,9 @@ import Source
 
 class CompleteCFGTests: XCTestCase {
     func testSimpleGuard() {
-      let startNode = BasicBlock(range: SourceRange.EMPTY, type: .start)
+      let startNode = Node(range: SourceRange.EMPTY, type: .start)
 
-      let guardCond = BasicBlock(
+      let guardCond = Node(
         range: SourceRange(
           start: SourceLocation(identifier: "test", line: 1, column: 7),
           end: SourceLocation(identifier: "test", line: 1, column: 12)
@@ -14,7 +14,7 @@ class CompleteCFGTests: XCTestCase {
         type: .condition
       )
 
-      let fatalDead = BasicBlock(
+      let fatalDead = Node(
         range: SourceRange(
           start: SourceLocation(identifier: "test", line: 1, column: 20),
           end: SourceLocation(identifier: "test", line: 1, column: 38)
@@ -22,7 +22,7 @@ class CompleteCFGTests: XCTestCase {
         type: .expression
       )
 
-      let endNode = BasicBlock(range: SourceRange.EMPTY, type: .end)
+      let endNode = Node(range: SourceRange.EMPTY, type: .end)
 
       let nodes = Set([
         startNode,
@@ -31,14 +31,14 @@ class CompleteCFGTests: XCTestCase {
         endNode
       ])
 
-      let edges: [BasicBlock: Set<BasicBlock>] = [
+      let edges: [Node: Set<Node>] = [
         startNode: [guardCond],
         guardCond: [fatalDead, endNode],
         fatalDead: [endNode],
         endNode: []
       ]
 
-      let reverseEdges: [BasicBlock: Set<BasicBlock>] = [
+      let reverseEdges: [Node: Set<Node>] = [
         startNode: [],
         guardCond: [startNode],
         fatalDead: [guardCond],
@@ -48,10 +48,10 @@ class CompleteCFGTests: XCTestCase {
       let completeCFG = try! CompleteCFG(cfg: PartialCFG(
         nodes: [guardCond, fatalDead],
         edges: [
-          guardCond: [.basicBlock(fatalDead), .passiveNext],
+          guardCond: [.node(fatalDead), .passiveNext],
           fatalDead: [],
         ],
-        entryPoint: .basicBlock(guardCond)
+        entryPoint: .node(guardCond)
       ))
 
       let expectedCompleteCFG = CompleteCFG(

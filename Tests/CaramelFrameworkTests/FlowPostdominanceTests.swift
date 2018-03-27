@@ -7,7 +7,7 @@ class FlowPostdominanceTests: XCTestCase {
     let linearPostDominancePath = "Resources/FlowPostdominanceTests/linearPostdominance.swift"
     let identifier = FileManager.default.currentDirectoryPath + "/" + linearPostDominancePath
 
-    let xZero = BasicBlock(
+    let xZero = Node(
       range: SourceRange(
         start: SourceLocation(identifier: identifier, line: 1, column: 1),
         end: SourceLocation(identifier: identifier, line: 1, column: 10)
@@ -15,7 +15,7 @@ class FlowPostdominanceTests: XCTestCase {
       type: .expression
     )
 
-    let xOne = BasicBlock(
+    let xOne = Node(
       range: SourceRange(
         start: SourceLocation(identifier: identifier, line: 2, column: 1),
         end: SourceLocation(identifier: identifier, line: 2, column: 6)
@@ -27,7 +27,7 @@ class FlowPostdominanceTests: XCTestCase {
       )
     )
 
-    let printX = BasicBlock(
+    let printX = Node(
       range: SourceRange(
         start: SourceLocation(identifier: identifier, line: 3, column: 1),
         end: SourceLocation(identifier: identifier, line: 3, column: 9)
@@ -38,11 +38,11 @@ class FlowPostdominanceTests: XCTestCase {
     let completeCFG = try! CompleteCFG(cfg: PartialCFG(
       nodes: [xZero, xOne, printX],
       edges: [
-        xZero: [.basicBlock(xOne)],
-        xOne: [.basicBlock(printX)],
+        xZero: [.node(xOne)],
+        xOne: [.node(printX)],
         printX: [.passiveNext]
       ],
-      entryPoint: .basicBlock(xZero)
+      entryPoint: .node(xZero)
     ))
 
     let postDominatorTree = buildImmediatePostdominatorTree(cfg: completeCFG)
@@ -56,7 +56,7 @@ class FlowPostdominanceTests: XCTestCase {
     let ifPostDominancePath = "Resources/FlowPostdominanceTests/linearPostdominance.swift"
     let identifier = FileManager.default.currentDirectoryPath + "/" + ifPostDominancePath
 
-    let xZero = BasicBlock(
+    let xZero = Node(
       range: SourceRange(
         start: SourceLocation(identifier: identifier, line: 1, column: 1),
         end: SourceLocation(identifier: identifier, line: 1, column: 10)
@@ -64,7 +64,7 @@ class FlowPostdominanceTests: XCTestCase {
       type: .expression
     )
 
-    let ifCond = BasicBlock(
+    let ifCond = Node(
       range: SourceRange(
         start: SourceLocation(identifier: identifier, line: 2, column: 4),
         end: SourceLocation(identifier: identifier, line: 2, column: 9)
@@ -72,7 +72,7 @@ class FlowPostdominanceTests: XCTestCase {
       type: .condition
     )
 
-    let printX = BasicBlock(
+    let printX = Node(
       range: SourceRange(
         start: SourceLocation(identifier: identifier, line: 3, column: 3),
         end: SourceLocation(identifier: identifier, line: 3, column: 11)
@@ -80,7 +80,7 @@ class FlowPostdominanceTests: XCTestCase {
       type: .expression
     )
 
-    let printThing = BasicBlock(
+    let printThing = Node(
       range: SourceRange(
         start: SourceLocation(identifier: identifier, line: 4, column: 3),
         end: SourceLocation(identifier: identifier, line: 4, column: 17)
@@ -88,7 +88,7 @@ class FlowPostdominanceTests: XCTestCase {
       type: .expression
     )
 
-    let xThree = BasicBlock(
+    let xThree = Node(
       range: SourceRange(
         start: SourceLocation(identifier: identifier, line: 6, column: 3),
         end: SourceLocation(identifier: identifier, line: 6, column: 8)
@@ -96,7 +96,7 @@ class FlowPostdominanceTests: XCTestCase {
       type: .expression
     )
 
-    let printDone = BasicBlock(
+    let printDone = Node(
       range: SourceRange(
         start: SourceLocation(identifier: identifier, line: 8, column: 1),
         end: SourceLocation(identifier: identifier, line: 8, column: 14)
@@ -107,14 +107,14 @@ class FlowPostdominanceTests: XCTestCase {
     let completeCFG = try! CompleteCFG(cfg: PartialCFG(
       nodes: [xZero, ifCond, printX, printThing, xThree, printDone],
       edges: [
-        xZero: [.basicBlock(ifCond)],
-        ifCond: [.basicBlock(printX), .basicBlock(xThree)],
-        printX: [.basicBlock(printThing)],
-        printThing: [.basicBlock(printDone)],
-        xThree: [.basicBlock(printDone)],
+        xZero: [.node(ifCond)],
+        ifCond: [.node(printX), .node(xThree)],
+        printX: [.node(printThing)],
+        printThing: [.node(printDone)],
+        xThree: [.node(printDone)],
         printDone: [.passiveNext]
       ],
-      entryPoint: .basicBlock(xZero)
+      entryPoint: .node(xZero)
     ))
 
     let postdominatorTree = buildImmediatePostdominatorTree(cfg: completeCFG)
