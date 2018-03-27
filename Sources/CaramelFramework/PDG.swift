@@ -263,20 +263,22 @@ public func buildImmediatePostdominatorTree(cfg: CompleteCFG) -> [Node: Node] {
 }
 
 /// Returns the set of nodes including the source and sink along the path from source to sink
-/// Sink is the end node since this is a postdominator tree
-private func pathToSink(inPostDominatorTree postdominatorTree: [Node: Node], from source: Node) -> Set<Node> {
+/// If the given sink is not in the path from source to the end node, then return the path to the end node
+/// Since this is a tree, this path is unique
+private func path(from source: Node, to sink: Node, inPostDominatorTree postdominatorTree: [Node: Node]) -> Set<Node> {
   var includedNodes: Set<Node> = [source]
-  var lastNode = source
-  while let nextNode = postdominatorTree[lastNode], nextNode != lastNode {
+  var prevNode = source
+  while let nextNode = postdominatorTree[prevNode], nextNode != prevNode, prevNode != sink {
     includedNodes.insert(nextNode)
-    lastNode = nextNode
+    prevNode = nextNode
   }
   return includedNodes
 }
 
 public func findControlDependents(of startPoint: Node, inCFG cfg: CompleteCFG, withPostdominatorTree postdominatorTree: [Node: Node]) -> Set<Node> {
+  let immediatePostdominator = postdominatorTree[startPoint]!
   let childPostdominators = cfg.edges[startPoint]!.map { child in
-    pathToSink(inPostDominatorTree: postdominatorTree, from: child)
+    path(from: child, to: immediatePostdominator, inPostDominatorTree: postdominatorTree)
   }
   let allPostdominators: Set<Node> = childPostdominators.reduce([], { $0.union($1) })
   let commonPostdominators: Set<Node> = childPostdominators.reduce(childPostdominators.first ?? [], { $0.intersection($1) })
