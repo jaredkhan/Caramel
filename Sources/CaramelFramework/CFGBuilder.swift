@@ -228,6 +228,21 @@ func getNode(_ expr: Expression) -> Node {
         type: .expression,
         defRange: assignment.leftExpression.sourceRange
       )
+    case let binaryOp as BinaryOperatorExpression:
+      switch binaryOp.binaryOperator {
+        // Support the standard library assignment operators
+        case "=", "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", "&=", "|=", "^=": 
+          return Node(
+            range: expr.sourceRange,
+            type: .expression,
+            defRange: binaryOp.leftExpression.sourceRange
+          )
+        default:
+          return Node(
+            range: expr.sourceRange,
+            type: .expression
+          )
+      }
     default:
       return Node(
         range: expr.sourceRange,

@@ -16,11 +16,10 @@ public class PDG {
       edges[node] = []
       reverseEdges[node] = []
     }
-    print("Building postdominator tree:")
-    print(NSDate().timeIntervalSince1970)
+    let pdStartTime = NSDate().timeIntervalSince1970
     let postdominatorTree = buildImmediatePostdominatorTree(cfg: cfg)
-    print("Built postdominator tree:")
-    print(NSDate().timeIntervalSince1970)
+    let pdDuration = NSDate().timeIntervalSince1970 - pdStartTime
+    print("Built postdominator tree in: \(pdDuration)")
 
     var controlDepTime: TimeInterval = 0
     var dataDepTime: TimeInterval = 0
@@ -59,8 +58,6 @@ public class PDG {
     }
     print("Control dep time: \(controlDepTime)")
     print("Data dep time: \(dataDepTime)")
-    print("Built PDG:")
-    print(NSDate().timeIntervalSince1970)
     self.nodes = nodes
     self.edges = edges
     self.reverseEdges = reverseEdges
@@ -127,6 +124,7 @@ public func findDataDependents(of startPoint: Node, inCFG cfg: CompleteCFG) -> S
   var dependents = Set<Node>()
 
   for definitionUSR in startPoint.definitions {
+    let ddSearchStart = NSDate().timeIntervalSince1970
     var expansionQueue = Queue<Node>()
     var visitedNodes = Set<Node>()
 
@@ -152,6 +150,8 @@ public func findDataDependents(of startPoint: Node, inCFG cfg: CompleteCFG) -> S
         }
       }
     }
+    let ddSearchDuration = NSDate().timeIntervalSince1970 - ddSearchStart
+    print("DD search completed in: \(ddSearchDuration)")
   }
 
   return dependents
