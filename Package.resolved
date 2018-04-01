@@ -2,6 +2,15 @@
   "object": {
     "pins": [
       {
+        "package": "bocho",
+        "repositoryURL": "https://github.com/yanagiba/bocho",
+        "state": {
+          "branch": null,
+          "revision": "a02d4faf11539b121cc007210a0141478fa3d924",
+          "version": "0.1.0"
+        }
+      },
+      {
         "package": "Clang_C",
         "repositoryURL": "https://github.com/norio-nomura/Clang_C.git",
         "state": {
@@ -47,15 +56,6 @@
         }
       },
       {
-        "package": "SWXMLHash",
-        "repositoryURL": "https://github.com/drmohundro/SWXMLHash.git",
-        "state": {
-          "branch": null,
-          "revision": "12496b370363034ccc919e1d72a99b9970b4941e",
-          "version": "4.2.5"
-        }
-      },
-      {
         "package": "SourceKit",
         "repositoryURL": "https://github.com/norio-nomura/SourceKit.git",
         "state": {
@@ -74,6 +74,15 @@
         }
       },
       {
+        "package": "swift-ast",
+        "repositoryURL": "https://github.com/yanagiba/swift-ast.git",
+        "state": {
+          "branch": null,
+          "revision": "87888a78bc264a57536e6c628f4ad4ad02eadd06",
+          "version": "0.4.1"
+        }
+      },
+      {
         "package": "SwiftShell",
         "repositoryURL": "https://github.com/kareman/SwiftShell.git",
         "state": {
@@ -83,29 +92,20 @@
         }
       },
       {
+        "package": "SWXMLHash",
+        "repositoryURL": "https://github.com/drmohundro/SWXMLHash.git",
+        "state": {
+          "branch": null,
+          "revision": "12496b370363034ccc919e1d72a99b9970b4941e",
+          "version": "4.2.5"
+        }
+      },
+      {
         "package": "Yams",
         "repositoryURL": "https://github.com/jpsim/Yams.git",
         "state": {
           "branch": null,
           "revision": "90a76f3cdb552b8e6aea5dabdd6c3578b8a7ad45",
-          "version": "0.4.1"
-        }
-      },
-      {
-        "package": "bocho",
-        "repositoryURL": "https://github.com/yanagiba/bocho",
-        "state": {
-          "branch": null,
-          "revision": "a02d4faf11539b121cc007210a0141478fa3d924",
-          "version": "0.1.0"
-        }
-      },
-      {
-        "package": "swift-ast",
-        "repositoryURL": "https://github.com/yanagiba/swift-ast.git",
-        "state": {
-          "branch": null,
-          "revision": "87888a78bc264a57536e6c628f4ad4ad02eadd06",
           "version": "0.4.1"
         }
       }

@@ -240,7 +240,7 @@ public func buildImmediatePostdominatorTree(cfg: CompleteCFG) -> [Node: Node] {
       guard node != cfg.end else { continue }
 
       // Intersect all the successors that have postdominators
-      let successorsWithPostdominators = cfg.edges[node]!.flatMap { successor -> Int? in
+      let successorsWithPostdominators = cfg.edges[node]!.compactMap { successor -> Int? in
         let successorIndex = inverseNumbering[successor]!
         guard postdominator[successorIndex] != nil else { return nil }
         return successorIndex

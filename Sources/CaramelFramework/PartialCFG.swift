@@ -17,7 +17,7 @@ public struct PartialCFG: Equatable {
   mutating func apply(context: [NextNode: NextNode?]) {
     edges = edges.mapValues { nextBlocks in
       Set(
-        nextBlocks.flatMap { nextBlock in
+        nextBlocks.compactMap { nextBlock in
           context[nextBlock] ?? nextBlock
         }
       )
