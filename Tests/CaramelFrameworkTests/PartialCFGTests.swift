@@ -64,15 +64,15 @@ class PartialCFGTests: XCTestCase {
 
       XCTAssertEqual(foundCFG, expectedCFG)
 
-      XCTAssertEqual(xAssignment.definitions, ["s:8simpleIf1xSiv"])
+      XCTAssertEqual(xAssignment.definitions, ["s:8simpleIf1xSivp"])
       XCTAssertEqual(ifCond.definitions, [])
       XCTAssertEqual(printHello.definitions, [])
       XCTAssertEqual(printGoodbye.definitions, [])
 
       XCTAssertEqual(xAssignment.references, [])
-      XCTAssertEqual(ifCond.references, ["s:8simpleIf1xSiv"])
-      XCTAssertEqual(printHello.references, ["s:s5printySayypGd_SS9separatorSS10terminatortF"])
-      XCTAssertEqual(printGoodbye.references, ["s:s5printySayypGd_SS9separatorSS10terminatortF"])
+      XCTAssertEqual(ifCond.references, ["s:8simpleIf1xSivp"])
+      XCTAssertEqual(printHello.references, ["s:s5printyypd_SS9separatorSS10terminatortF"])
+      XCTAssertEqual(printGoodbye.references, ["s:s5printyypd_SS9separatorSS10terminatortF"])
     }
 
     func testBreakFor() {
@@ -142,13 +142,13 @@ class PartialCFGTests: XCTestCase {
       XCTAssertEqual(foundCFG, expectedCFG)
 
       XCTAssertEqual(threeArray.definitions, []) 
-      XCTAssertEqual(forX1.definitions, ["s:8breakFor1xL_Siv"]) 
+      XCTAssertEqual(forX1.definitions, ["s:8breakFor1xL_Sivp"]) 
       XCTAssertEqual(printX.definitions, []) 
       XCTAssertEqual(break1.definitions, []) 
 
       XCTAssertEqual(threeArray.references, [])
       XCTAssertEqual(forX1.references, [])
-      XCTAssertEqual(printX.references, ["s:s5printySayypGd_SS9separatorSS10terminatortF", "s:8breakFor1xL_Siv"])
+      XCTAssertEqual(printX.references, ["s:s5printyypd_SS9separatorSS10terminatortF", "s:8breakFor1xL_Sivp"])
       XCTAssertEqual(break1.references, [])
     }
 
@@ -262,7 +262,7 @@ class PartialCFGTests: XCTestCase {
       XCTAssertEqual(foundCFG, expectedCFG)
 
       XCTAssertEqual(threeRange.definitions, []) 
-      XCTAssertEqual(forX2.definitions, ["s:11continueFor1xL_Siv"]) 
+      XCTAssertEqual(forX2.definitions, ["s:11continueFor1xL_Sivp"]) 
       XCTAssertEqual(continue1.definitions, []) 
 
       XCTAssertEqual(threeRange.references, []) 
@@ -964,13 +964,13 @@ class PartialCFGTests: XCTestCase {
 
       XCTAssertEqual(foundCFG, expectedCFG)
 
-      XCTAssertEqual(myVarDeclaration.definitions, ["s:13allStructures5myVarSiv"])
-      XCTAssertEqual(patternConstDeclaration.definitions, ["s:13allStructures8patternlSiv", "s:13allStructures8patternrSiv"])
-      XCTAssertEqual(myVarInc.definitions, ["s:13allStructures5myVarSiv"])
+      XCTAssertEqual(myVarDeclaration.definitions, ["s:13allStructures5myVarSivp"])
+      XCTAssertEqual(patternConstDeclaration.definitions, ["s:13allStructures8patternlSivp", "s:13allStructures8patternrSivp"])
+      XCTAssertEqual(myVarInc.definitions, ["s:13allStructures5myVarSivp"])
       XCTAssertEqual(ifCond1.definitions, [])
       XCTAssertEqual(printHello.definitions, [])
-      XCTAssertEqual(setMyVar.definitions, ["s:13allStructures5myVarSiv"])
-      XCTAssertEqual(xDecl.definitions, ["s:13allStructures1xL_Siv"])
+      XCTAssertEqual(setMyVar.definitions, ["s:13allStructures5myVarSivp"])
+      XCTAssertEqual(xDecl.definitions, ["s:13allStructures1xL_Sivp"])
       XCTAssertEqual(ifCond2.definitions, [])
       XCTAssertEqual(printGoodbye.definitions, [])
       XCTAssertEqual(ifCond3.definitions, [])
@@ -978,11 +978,11 @@ class PartialCFGTests: XCTestCase {
       XCTAssertEqual(ifCond5.definitions, [])
       XCTAssertEqual(printWoah.definitions, [])
       XCTAssertEqual(threeArray.definitions, [])
-      XCTAssertEqual(forX1.definitions, ["s:13allStructures1xL_Siv"])
+      XCTAssertEqual(forX1.definitions, ["s:13allStructures1xL_Sivp"])
       XCTAssertEqual(printX.definitions, [])
       XCTAssertEqual(break1.definitions, [])
       XCTAssertEqual(threeRange.definitions, [])
-      XCTAssertEqual(forX2.definitions, ["s:13allStructures1xL_Siv"])
+      XCTAssertEqual(forX2.definitions, ["s:13allStructures1xL_Sivp"])
       XCTAssertEqual(continue1.definitions, [])
       XCTAssertEqual(oneGreaterThanTwo.definitions, [])
       XCTAssertEqual(continue2.definitions, [])
@@ -1005,20 +1005,20 @@ class PartialCFGTests: XCTestCase {
 
       XCTAssertEqual(myVarDeclaration.references, [])
       XCTAssertEqual(patternConstDeclaration.references, [])
-      XCTAssertEqual(myVarInc.references, ["s:13allStructures5myVarSiv"])
+      XCTAssertEqual(myVarInc.references, ["s:13allStructures5myVarSivp"])
       XCTAssertEqual(ifCond1.references, [])
-      XCTAssertEqual(printHello.references, ["s:s5printySayypGd_SS9separatorSS10terminatortF"])
+      XCTAssertEqual(printHello.references, ["s:s5printyypd_SS9separatorSS10terminatortF"])
       XCTAssertEqual(setMyVar.references, [])
       XCTAssertEqual(xDecl.references, [])
       XCTAssertEqual(ifCond2.references, [])
-      XCTAssertEqual(printGoodbye.references, ["s:s5printySayypGd_SS9separatorSS10terminatortF"])
+      XCTAssertEqual(printGoodbye.references, ["s:s5printyypd_SS9separatorSS10terminatortF"])
       XCTAssertEqual(ifCond3.references, [])
       XCTAssertEqual(ifCond4.references, [])
       XCTAssertEqual(ifCond5.references, [])
-      XCTAssertEqual(printWoah.references, ["s:s5printySayypGd_SS9separatorSS10terminatortF"])
+      XCTAssertEqual(printWoah.references, ["s:s5printyypd_SS9separatorSS10terminatortF"])
       XCTAssertEqual(threeArray.references, [])
       XCTAssertEqual(forX1.references, [])
-      XCTAssertEqual(printX.references, ["s:s5printySayypGd_SS9separatorSS10terminatortF", "s:13allStructures1xL_Siv"])
+      XCTAssertEqual(printX.references, ["s:s5printyypd_SS9separatorSS10terminatortF", "s:13allStructures1xL_Sivp"])
       XCTAssertEqual(break1.references, [])
       XCTAssertEqual(threeRange.references, [])
       XCTAssertEqual(forX2.references, [])
@@ -1027,7 +1027,7 @@ class PartialCFGTests: XCTestCase {
       XCTAssertEqual(continue2.references, [])
       XCTAssertEqual(falseWhileCond.references, [])
       XCTAssertEqual(break2.references, [])
-      XCTAssertEqual(printHi.references, ["s:s5printySayypGd_SS9separatorSS10terminatortF"])
+      XCTAssertEqual(printHi.references, ["s:s5printyypd_SS9separatorSS10terminatortF"])
       XCTAssertEqual(trueIfCond.references, [])
       XCTAssertEqual(break3.references, [])
       XCTAssertEqual(repeatWhileCond.references, [])
@@ -1036,11 +1036,11 @@ class PartialCFGTests: XCTestCase {
       XCTAssertEqual(switchSubject.references, [])
       XCTAssertEqual(case1.references, [])
       XCTAssertEqual(case2.references, [])
-      XCTAssertEqual(printOne.references, ["s:s5printySayypGd_SS9separatorSS10terminatortF"])
+      XCTAssertEqual(printOne.references, ["s:s5printyypd_SS9separatorSS10terminatortF"])
       XCTAssertEqual(fallthroughStmt.references, [])
       XCTAssertEqual(case3.references, [])
       XCTAssertEqual(break4.references, [])
-      XCTAssertEqual(printNope.references, ["s:s5printySayypGd_SS9separatorSS10terminatortF"])
+      XCTAssertEqual(printNope.references, ["s:s5printyypd_SS9separatorSS10terminatortF"])
     }
 
     static var allTests = [
