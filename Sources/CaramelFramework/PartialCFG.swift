@@ -60,20 +60,6 @@ public struct PartialCFG: Equatable {
     edges: [:],
     entryPoint: .passiveNext
   )
-
-  /// Returns a Boolean value that indicates whether a CFGs set of edges is equal to
-  /// another CFGs set of edges
-  public static func edgesMatch(_ lhs: PartialCFG, _ rhs: PartialCFG) -> Bool {
-    if lhs.edges.count != rhs.edges.count { return false }
-    for key in lhs.edges.keys {
-      if lhs.edges[key] != rhs.edges[key] { return false }
-    }
-    return true
-  }
-
-  public static func ==(lhs: PartialCFG, rhs: PartialCFG) -> Bool {
-    return lhs.nodes == rhs.nodes && edgesMatch(lhs, rhs) && lhs.entryPoint == rhs.entryPoint
-  }
 }
 
 // MARK: Initialisers

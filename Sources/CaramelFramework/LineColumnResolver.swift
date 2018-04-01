@@ -6,10 +6,6 @@ public struct LineColumnResolver {
     let offset: Int
     /// The length of the line in bytes up to and including the newline character
     let length: Int
-
-    public static func ==(lhs: Line, rhs: Line) -> Bool {
-      return (lhs.offset, lhs.length) == (rhs.offset, rhs.length)
-    }
   }
 
   /// Maps line numbers to Lines

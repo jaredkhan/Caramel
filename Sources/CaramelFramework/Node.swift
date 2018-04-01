@@ -58,7 +58,7 @@ extension Node: Hashable {
   }
 }
 
-public enum NodeType {
+public enum NodeType: Equatable {
   /// Synthesized start node for the CFG
   case start
   /// Synthesized end node for the CFG

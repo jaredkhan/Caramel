@@ -121,7 +121,7 @@ public class PDG: Equatable {
   }
 }
 
-public enum PDGEdge: Hashable {
+public enum PDGEdge: Equatable, Hashable {
   case data(Node)
   case control(Node)
 
