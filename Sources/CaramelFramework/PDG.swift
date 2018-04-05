@@ -1,5 +1,7 @@
 import Foundation
 
+var refDefRetrievalTime: TimeInterval = 0
+
 /// Program Dependence Graph
 /// Edges are dependencies between nodes (either data or control dependencies)
 public class PDG: Equatable {
@@ -66,6 +68,7 @@ public class PDG: Equatable {
     }
     print("Control dep time: \(controlDepTime)")
     print("Data dep time: \(dataDepTime)")
+    print("Ref def time: \(refDefRetrievalTime)")
     self.nodes = nodes
     self.edges = edges
     self.reverseEdges = reverseEdges
@@ -148,8 +151,13 @@ public enum PDGEdge: Equatable, Hashable {
 /// d is the number of definitions in the given node
 public func findDataDependents(of startPoint: Node, inCFG cfg: CompleteCFG) -> Set<Node> {
   var dependents = Set<Node>()
+  var enqueueCount = 0
 
-  for definitionUSR in startPoint.definitions {
+  let defTimeStart = NSDate().timeIntervalSince1970
+  let definitions = startPoint.definitions
+  refDefRetrievalTime += NSDate().timeIntervalSince1970 - defTimeStart
+
+  for definitionUSR in definitions {
     let ddSearchStart = NSDate().timeIntervalSince1970
     var expansionQueue = Queue<Node>()
     var visitedNodes = Set<Node>()
@@ -161,23 +169,33 @@ public func findDataDependents(of startPoint: Node, inCFG cfg: CompleteCFG) -> S
     while let currentNode = expansionQueue.dequeue() {
       visitedNodes.insert(currentNode)
 
+      let refTimeStart = NSDate().timeIntervalSince1970
+      let references = currentNode.references
+      refDefRetrievalTime += NSDate().timeIntervalSince1970 - refTimeStart
+
       // If I reference the definition, add me to the dependents
-      if currentNode.references.contains(definitionUSR) {
+      if references.contains(definitionUSR) {
         dependents.insert(currentNode)
       }
 
+      let innerDefStartTime = NSDate().timeIntervalSince1970
+      let innerDefinitions = currentNode.definitions
+      refDefRetrievalTime += NSDate().timeIntervalSince1970 - innerDefStartTime
+
       // If I redefine the definition, do not visit my children
-      guard !currentNode.definitions.contains(definitionUSR) else { continue }
+      guard !innerDefinitions.contains(definitionUSR) else { continue }
 
       // Enqueue all my children that haven't been seen already
       for nextNode in cfg.edges[currentNode] ?? [] {
         if !visitedNodes.contains(nextNode) {
           expansionQueue.enqueue(nextNode)
+          enqueueCount += 1
         }
       }
     }
     let ddSearchDuration = NSDate().timeIntervalSince1970 - ddSearchStart
     print("DD search completed in: \(ddSearchDuration)")
+    print("DD search enqueued: \(enqueueCount)")
   }
 
   return dependents
