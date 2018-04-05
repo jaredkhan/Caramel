@@ -4,7 +4,7 @@ import SwiftShell
 func outputGraph(dotFormat: String) {
   let task = Process()
   task.launchPath = "/usr/bin/env"
-  task.arguments = ["dot", "-Tpng", "-o", "graph1.png"]
+  task.arguments = ["dot", "-Teps", "-o", "graph1.eps"]
 
   let inputPipe = Pipe()
   let inputHandle = inputPipe.fileHandleForWriting
@@ -22,7 +22,7 @@ func outputGraph(dotFormat: String) {
   task.waitUntilExit()
 
   if task.terminationStatus == 0 {
-    run("open", "graph1.png")
+    run("open", "graph1.eps")
   } else {
     print("Couldn't write graph image")
   }
