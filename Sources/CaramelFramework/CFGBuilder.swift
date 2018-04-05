@@ -113,6 +113,7 @@ func getCFG(_ stmt: Statement) -> PartialCFG {
       // - Evaluate each condition in turn
       // - If encounter a condition that does not hold, enter else block immediately
       // - Otherwise continue
+      // "You can’t use an unlabeled break statement to break out of an if statement."
       let bodyCFG = getCFG(n.codeBlock)
       let elseCFG = n.elseClause.map(getCFG) ?? PartialCFG.empty
       let conditionChainCFG = getCFG(n.conditionList)
@@ -120,9 +121,7 @@ func getCFG(_ stmt: Statement) -> PartialCFG {
       return conditionChainCFG.applying(context: [
         .conditionHold: bodyCFG.entryPoint,
         .conditionFail: elseCFG.entryPoint
-      ]).merging(with: bodyCFG, elseCFG).applying(context: [
-        .breakStatement: .passiveNext
-      ])
+      ]).merging(with: bodyCFG, elseCFG)
     case let n as RepeatWhileStatement: 
       // The control flow of a repeat while statement is as follows: 
       // - Execute the body
