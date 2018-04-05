@@ -17,7 +17,6 @@ struct IdentifierIndex {
     }
     self.filePath = filePath
 
-    print("Making SK call")
     let syntaxMap = SyntaxMap(file: file)
     let identifierOffsets = syntaxMap.tokens.filter {
       $0.type == SyntaxKind.identifier.rawValue
@@ -29,7 +28,6 @@ struct IdentifierIndex {
     var declarationIndex: [(offset: Int, usr: USR)] = []
 
     for identifierOffset in identifierOffsets {
-      print("Making SK call")
       let cursorInfo: [String: SourceKitRepresentable] = Request.cursorInfo(
         file: filePath,
         offset: Int64(identifierOffset),
