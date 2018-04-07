@@ -24,11 +24,7 @@ struct NodeOrdering {
   }
 
   public func areInIncreasingOrder(_ lhs: Node, _ rhs: Node) -> Bool {
-    if let lhsNum = indices[lhs], let rhsNum = indices[rhs] {
-      return lhsNum < rhsNum
-    } else {
-      fatalError("Couldn't get indices for nodes")
-    }
+    return index(for: lhs) < index(for: rhs)
   }
 
   public var description: String {

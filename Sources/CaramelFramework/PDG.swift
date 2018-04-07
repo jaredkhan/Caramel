@@ -181,7 +181,9 @@ private func flowOrdering(ofCFG cfg: CompleteCFG, withPostdominatorTree postdomi
     let ipdom = postdominatorTree[startNode]!
     return [startNode] + children.filter { !visitedNodes.contains($0) }.map { boundedWalk(from: $0, upTo: ipdom) }.reduce([],+) + boundedWalk(from: ipdom, upTo: endNode)
   }
-  return NodeOrdering(array: boundedWalk(from: cfg.start, upTo: cfg.end))
+  var result = boundedWalk(from: cfg.start, upTo: cfg.end)
+  result.append(cfg.end)
+  return NodeOrdering(array: result)
 }
 
 /// Worklist algorithm
@@ -202,9 +204,9 @@ private func findReachingDefinitions(inCFG cfg: CompleteCFG, nodeOrdering: NodeO
   var findTime: TimeInterval = 0
   var findStartTime = NSDate().timeIntervalSince1970
 
-  while let node = changedNodes.first(where: { changedNodes.contains($0) }) {
-    findTime += NSDate().timeIntervalSince1970 - findStartTime
+  while let node = nodeOrdering.nodes.first(where: { changedNodes.contains($0) }) {
     changedNodes.remove(node)
+    findTime += NSDate().timeIntervalSince1970 - findStartTime
 
     let predecessors = cfg.reverseEdges[node] ?? []
     let currentReachIn: Set<Definition> = predecessors.reduce([], { acc, predecessor in
