@@ -43,4 +43,8 @@ struct NodeOrdering {
     }
     return result
   }
+
+  public var priorityQueue: PriorityQueue<Node> {
+    return PriorityQueue(order: self.areInIncreasingOrder, startingValues: nodes)
+  }
 }
