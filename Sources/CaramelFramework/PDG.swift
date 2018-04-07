@@ -31,6 +31,21 @@ public class PDG: Equatable {
     let pdDuration = NSDate().timeIntervalSince1970 - pdStartTime
     print("Built postdominator tree in: \(pdDuration)")
 
+    let refDefStartTime = NSDate().timeIntervalSince1970
+    for node in cfg.nodes {
+      _ = node.definitions
+      _ = node.references
+    }
+    refDefRetrievalTime = NSDate().timeIntervalSince1970 - refDefStartTime
+    print("Ref def time: \(refDefRetrievalTime)")
+
+    let ordering = flowOrdering(ofCFG: cfg, withPostdominatorTree: postdominatorTree)
+
+    let rdStartTime = NSDate().timeIntervalSince1970
+    let reachingDefinitions = findReachingDefinitions(inCFG: cfg, nodeOrdering: ordering)
+    let rdDuration = NSDate().timeIntervalSince1970 - rdStartTime
+    print("Found reaching defs in: \(rdDuration)")
+
     var controlDepTime: TimeInterval = 0
     var dataDepTime: TimeInterval = 0
 
@@ -55,12 +70,18 @@ public class PDG: Equatable {
 
       let ddStart = NSDate().timeIntervalSince1970
 
-      let dataDependents = findDataDependents(of: node, inCFG: cfg)
+      // let dataDependents = findDataDependents(of: node, inCFG: cfg)
+      let dataDependencies = findDataDependencies(of: node, inCFG: cfg, withReachingDefinitions: reachingDefinitions)
 
-      for dataDependent in dataDependents {
-        edges[node]!.insert(.data(dataDependent))
-        reverseEdges[dataDependent]!.insert(.data(node))
+      for dataDependency in dataDependencies {
+        edges[dataDependency]!.insert(.data(node))
+        reverseEdges[node]!.insert(.data(dataDependency))
       }
+
+      // for dataDependent in dataDependents {
+      //   edges[node]!.insert(.data(dataDependent))
+      //   reverseEdges[dataDependent]!.insert(.data(node))
+      // }
 
       let ddEnd = NSDate().timeIntervalSince1970
       controlDepTime += ddStart - cdStart
@@ -68,7 +89,7 @@ public class PDG: Equatable {
     }
     print("Control dep time: \(controlDepTime)")
     print("Data dep time: \(dataDepTime)")
-    print("Ref def time: \(refDefRetrievalTime)")
+    
     self.nodes = nodes
     self.edges = edges
     self.reverseEdges = reverseEdges
@@ -144,64 +165,138 @@ public enum PDGEdge: Equatable, Hashable {
   }
 }
 
-/// Find the data dependents of a given node in a given CFG
-/// Performs a BFS for each definition in the given node
-/// Complexity: O(|E|d)
-/// where |E| is the number of edges in the CFG,
-/// d is the number of definitions in the given node
-public func findDataDependents(of startPoint: Node, inCFG cfg: CompleteCFG) -> Set<Node> {
-  var dependents = Set<Node>()
-  var enqueueCount = 0
-
-  let defTimeStart = NSDate().timeIntervalSince1970
-  let definitions = startPoint.definitions
-  refDefRetrievalTime += NSDate().timeIntervalSince1970 - defTimeStart
-
-  for definitionUSR in definitions {
-    let ddSearchStart = NSDate().timeIntervalSince1970
-    var expansionQueue = Queue<Node>()
-    var visitedNodes = Set<Node>()
-
-    for nextNode in cfg.edges[startPoint] ?? [] {
-      expansionQueue.enqueue(nextNode)
-    }
-
-    while let currentNode = expansionQueue.dequeue() {
-      visitedNodes.insert(currentNode)
-
-      let refTimeStart = NSDate().timeIntervalSince1970
-      let references = currentNode.references
-      refDefRetrievalTime += NSDate().timeIntervalSince1970 - refTimeStart
-
-      // If I reference the definition, add me to the dependents
-      if references.contains(definitionUSR) {
-        dependents.insert(currentNode)
-      }
-
-      let innerDefStartTime = NSDate().timeIntervalSince1970
-      let innerDefinitions = currentNode.definitions
-      refDefRetrievalTime += NSDate().timeIntervalSince1970 - innerDefStartTime
-
-      // If I redefine the definition, do not visit my children
-      guard !innerDefinitions.contains(definitionUSR) else { continue }
-
-      // Enqueue all my children that haven't been seen already
-      for nextNode in cfg.edges[currentNode] ?? [] {
-        if !visitedNodes.contains(nextNode) {
-          expansionQueue.enqueue(nextNode)
-          enqueueCount += 1
-        }
-      }
-    }
-    let ddSearchDuration = NSDate().timeIntervalSince1970 - ddSearchStart
-    print("DD search completed in: \(ddSearchDuration)")
-    print("DD search enqueued: \(enqueueCount)")
-  }
-
-  return dependents
+private struct Definition: Hashable {
+  let usr: USR
+  let node: Node
 }
 
-public func backwardPostOrderNumbering(cfg: CompleteCFG) -> (forward: [Int: Node], inverse: [Node: Int]) {
+/// Returns a node ordering that makes sure each node between a node A and it's immediate postdominator B is ordered between A and B
+private func flowOrdering(ofCFG cfg: CompleteCFG, withPostdominatorTree postdominatorTree: [Node: Node]) -> NodeOrdering {
+  var visitedNodes: Set<Node> = []
+  func boundedWalk(from startNode: Node, upTo endNode: Node) -> [Node] {
+    if startNode == endNode { return [] }
+    // assert that endNode is reachable from start node
+    visitedNodes.insert(startNode)
+    let children = cfg.edges[startNode] ?? []
+    let ipdom = postdominatorTree[startNode]!
+    return [startNode] + children.filter { !visitedNodes.contains($0) }.map { boundedWalk(from: $0, upTo: ipdom) }.reduce([],+) + boundedWalk(from: ipdom, upTo: endNode)
+  }
+  return NodeOrdering(array: boundedWalk(from: cfg.start, upTo: cfg.end))
+}
+
+/// Worklist algorithm
+private func findReachingDefinitions(inCFG cfg: CompleteCFG, nodeOrdering: NodeOrdering) -> [Node: Set<Definition>] {
+  var changedNodes = Set(cfg.nodes)
+  var gen: [Node: Set<Definition>] = [:]
+
+  var reachOut: [Node: Set<Definition>] = [:]
+  var reachIn: [Node: Set<Definition>] = [:]
+  for node in cfg.nodes {
+    gen[node] = Set(node.definitions.map { usr in
+      Definition(usr: usr, node: node)
+    })
+    reachOut[node] = gen[node]!
+    reachIn[node] = []
+  }
+
+  var findTime: TimeInterval = 0
+  var findStartTime = NSDate().timeIntervalSince1970
+
+  while let node = changedNodes.first(where: { changedNodes.contains($0) }) {
+    findTime += NSDate().timeIntervalSince1970 - findStartTime
+    changedNodes.remove(node)
+
+    let predecessors = cfg.reverseEdges[node] ?? []
+    let currentReachIn: Set<Definition> = predecessors.reduce([], { acc, predecessor in
+      acc.union(reachOut[predecessor]!)
+    })
+
+    let oldOut = reachOut[node]!
+    
+    let killed = currentReachIn.filter { node.definitions.contains($0.usr) }
+    reachOut[node] = currentReachIn.subtracting(killed).union(gen[node]!)
+
+    if reachOut[node] != oldOut {
+      changedNodes.formUnion(cfg.edges[node]!)
+    }
+
+    reachIn[node] = currentReachIn
+    findStartTime = NSDate().timeIntervalSince1970
+  }
+  findTime += NSDate().timeIntervalSince1970 - findStartTime
+  print("Found next nodes in: \(findTime)")
+
+  return reachIn
+}
+
+private func findDataDependencies(of node: Node, inCFG cfg: CompleteCFG, withReachingDefinitions reachingDefinitions: [Node: Set<Definition>]) -> Set<Node> {
+  return Set(reachingDefinitions[node]!.filter { definition in
+    node.references.contains(definition.usr)
+  }.map { definition in definition.node })
+}
+
+// /// Find the data dependents of a given node in a given CFG
+// /// Performs a BFS for each definition in the given node
+// /// Complexity: O(|E|d)
+// /// where |E| is the number of edges in the CFG,
+// /// d is the number of definitions in the given node
+// public func findDataDependents(of startPoint: Node, inCFG cfg: CompleteCFG) -> Set<Node> {
+//   var dependents = Set<Node>()
+//   var enqueueCount = 0
+
+//   let defTimeStart = NSDate().timeIntervalSince1970
+//   let definitions = startPoint.definitions
+//   refDefRetrievalTime += NSDate().timeIntervalSince1970 - defTimeStart
+
+//   for definitionUSR in definitions {
+//     let ddSearchStart = NSDate().timeIntervalSince1970
+//     var expansionQueue = Queue<Node>()
+//     var visitedNodes = Set<Node>()
+
+//     for nextNode in cfg.edges[startPoint] ?? [] {
+//       expansionQueue.enqueue(nextNode)
+//     }
+
+//     while let currentNode = expansionQueue.dequeue() {
+//       visitedNodes.insert(currentNode)
+
+//       let refTimeStart = NSDate().timeIntervalSince1970
+//       let references = currentNode.references
+//       refDefRetrievalTime += NSDate().timeIntervalSince1970 - refTimeStart
+
+//       // If I reference the definition, add me to the dependents
+//       if references.contains(definitionUSR) {
+//         dependents.insert(currentNode)
+//       }
+
+//       let innerDefStartTime = NSDate().timeIntervalSince1970
+//       let innerDefinitions = currentNode.definitions
+//       refDefRetrievalTime += NSDate().timeIntervalSince1970 - innerDefStartTime
+
+//       // If I redefine the definition, do not visit my children
+//       guard !innerDefinitions.contains(definitionUSR) else { continue }
+
+//       // Enqueue all my children that haven't been seen already
+//       for nextNode in cfg.edges[currentNode] ?? [] {
+//         if !visitedNodes.contains(nextNode) {
+//           expansionQueue.enqueue(nextNode)
+//           enqueueCount += 1
+//         }
+//       }
+//     }
+//     let ddSearchDuration = NSDate().timeIntervalSince1970 - ddSearchStart
+//     print("DD search completed in: \(ddSearchDuration)")
+//     print("DD search enqueued: \(enqueueCount)")
+//   }
+
+//   return dependents
+// }
+
+/// A backward post order numbering of the nodes
+/// Found by building a depth first search tree T rooted at END and working backward
+/// Numbering by postorder traversal of T
+/// END node should be last
+private func backwardPostOrderNumbering(cfg: CompleteCFG) -> NodeOrdering {
   var remainingNodeStack = [cfg.end]
   var resultStack: [Node] = []
   var visitedNodes = Set<Node>()
@@ -215,21 +310,14 @@ public func backwardPostOrderNumbering(cfg: CompleteCFG) -> (forward: [Int: Node
     }
   }
 
-  var forwardMapping: [Int: Node] = [:]
-  var inverseMapping: [Node: Int] = [:]
-  var index = 0
-  while let node = resultStack.popLast() {
-    forwardMapping[index] = node
-    inverseMapping[node] = index
-    index += 1
-  }
-  return (forward: forwardMapping, inverse: inverseMapping)
+  return NodeOrdering(array: resultStack.reversed())
 }
 
 /// Cooper, Harvey & Kennedy: A simple, fast dominance algorithm
 /// (http://www.hipersoft.rice.edu/grads/publications/dom14.pdf)
 public func buildImmediatePostdominatorTree(cfg: CompleteCFG) -> [Node: Node] {
-  let (numbering, inverseNumbering) = backwardPostOrderNumbering(cfg: cfg)
+  let ordering = backwardPostOrderNumbering(cfg: cfg)
+
   var postdominator: [Int: Int] = [:]
 
   // Nodes with higher numberings already have postdominator estimations
@@ -248,18 +336,17 @@ public func buildImmediatePostdominatorTree(cfg: CompleteCFG) -> [Node: Node] {
     return pointer1
   }
   // Initialise the postdominator of the end node to be the end node itself
-  postdominator[inverseNumbering[cfg.end]!] = inverseNumbering[cfg.end]!
+  postdominator[ordering.index(for: cfg.end)] = ordering.index(for: cfg.end)
 
   var changed = true
   while changed {
     changed = false
-    for index in (0 ..< numbering.count).reversed() {
-      let node = numbering[index]!
+    for (index, node) in ordering.nodes.enumerated().reversed() {
       guard node != cfg.end else { continue }
 
       // Intersect all the successors that have postdominators
       let successorsWithPostdominators = cfg.edges[node]!.compactMap { successor -> Int? in
-        let successorIndex = inverseNumbering[successor]!
+        let successorIndex = ordering.index(for: successor)
         guard postdominator[successorIndex] != nil else { return nil }
         return successorIndex
       }
@@ -275,7 +362,7 @@ public func buildImmediatePostdominatorTree(cfg: CompleteCFG) -> [Node: Node] {
 
   var resultTree: [Node: Node] = [:]
   for (nodeIndex, immediatePostdominatorIndex) in postdominator {
-    resultTree[numbering[nodeIndex]!] = numbering[immediatePostdominatorIndex]! 
+    resultTree[ordering.node(for: nodeIndex)] = ordering.node(for: immediatePostdominatorIndex)
   }
   return resultTree
 }

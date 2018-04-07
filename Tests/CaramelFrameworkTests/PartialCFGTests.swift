@@ -530,7 +530,7 @@ class PartialCFGTests: XCTestCase {
       let edges: [Node: Set<NextNode>] = [
         printHi: [.node(trueIfCond)],
         trueIfCond: [.node(break3), .node(repeatWhileCond)],
-        break3: [.node(repeatWhileCond)],
+        break3: [.passiveNext],
         repeatWhileCond: [.passiveNext, .node(printHi)],
       ]
 
@@ -935,7 +935,7 @@ class PartialCFGTests: XCTestCase {
         break2: [.node(printHi)],
         printHi: [.node(trueIfCond)],
         trueIfCond: [.node(break3), .node(repeatWhileCond)],
-        break3: [.node(repeatWhileCond)],
+        break3: [.node(guardCond)],
         repeatWhileCond: [.node(guardCond), .node(printHi)],
         guardCond: [.node(switchSubject), .node(fatalDead)],
         fatalDead: [],
