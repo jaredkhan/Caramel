@@ -1,12 +1,45 @@
 import Foundation
 
-struct Definition: Hashable {
+/// Get only the data dependency edges for this CFG
+func dataDependencyEdges(cfg: CompleteCFG) -> (forward: [Node: Set<PDGEdge>], reverse: [Node: Set<PDGEdge>]) {
+  var edges: [Node: Set<PDGEdge>] = [:]
+  var reverseEdges: [Node: Set<PDGEdge>] = [:]
+
+  // Initialise edge and reverseEdge sets to be empty
+  for node in cfg.nodes {
+    guard node != cfg.end else { continue }
+    edges[node] = []
+    reverseEdges[node] = []
+  }
+
+  // Cache the references and definitions
+  let refDefStartTime = NSDate().timeIntervalSince1970
+  for node in cfg.nodes {
+    _ = node.definitions
+    _ = node.references
+  }
+  let refDefDuration = NSDate().timeIntervalSince1970 - refDefStartTime
+  print("Ref def time: \(refDefDuration)")
+
+  for node in cfg.nodes {
+    let dataDependencies = findDataDependencies(of: node, inCFG: cfg)
+
+    for dataDependency in dataDependencies {
+      edges[dataDependency]!.insert(.data(node))
+      reverseEdges[node]!.insert(.data(dataDependency))
+    }
+  }
+
+  return (forward: edges, reverse: reverseEdges)
+}
+
+private struct Definition: Hashable {
   let usr: USR
   let node: Node
 }
 
 /// Returns a node ordering that makes sure each node between a node A and it's immediate postdominator B is ordered between A and B
-func flowOrdering(ofCFG cfg: CompleteCFG, withPostdominatorTree postdominatorTree: [Node: Node]) -> NodeOrdering {
+private func flowOrdering(ofCFG cfg: CompleteCFG, withPostdominatorTree postdominatorTree: [Node: Node]) -> NodeOrdering {
   var visitedNodes: Set<Node> = []
   func boundedWalk(from startNode: Node, upTo endNode: Node) -> [Node] {
     if startNode == endNode { return [] }
@@ -22,7 +55,7 @@ func flowOrdering(ofCFG cfg: CompleteCFG, withPostdominatorTree postdominatorTre
 }
 
 /// Worklist algorithm
-func findReachingDefinitions(inCFG cfg: CompleteCFG, nodeOrdering: NodeOrdering) -> [Node: Set<Definition>] {
+private func findReachingDefinitions(inCFG cfg: CompleteCFG, nodeOrdering: NodeOrdering) -> [Node: Set<Definition>] {
   let queueStartTime = NSDate().timeIntervalSince1970
   var changedNodes = nodeOrdering.priorityQueue
   let queueBuildTime = NSDate().timeIntervalSince1970 - queueStartTime
@@ -71,7 +104,10 @@ func findReachingDefinitions(inCFG cfg: CompleteCFG, nodeOrdering: NodeOrdering)
   return reachIn
 }
 
-func findDataDependencies(of node: Node, inCFG cfg: CompleteCFG, withReachingDefinitions reachingDefinitions: [Node: Set<Definition>]) -> Set<Node> {
+private func findDataDependencies(of node: Node, inCFG cfg: CompleteCFG) -> Set<Node> {
+  let postdominatorTree = buildImmediatePostdominatorTree(cfg: cfg)
+  let ordering = flowOrdering(ofCFG: cfg, withPostdominatorTree: postdominatorTree)
+  let reachingDefinitions = findReachingDefinitions(inCFG: cfg, nodeOrdering: ordering)
   return Set(reachingDefinitions[node]!.filter { definition in
     node.references.contains(definition.usr)
   }.map { definition in definition.node })

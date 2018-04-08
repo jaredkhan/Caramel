@@ -16,75 +16,15 @@ public class PDG: Equatable {
   }
 
   public init(cfg: CompleteCFG) {
-    var nodes = Set<Node>()
-    var edges = [Node: Set<PDGEdge>]()
-    var reverseEdges = [Node: Set<PDGEdge>]()
-
-    // Initialise edge and reverseEdge sets to be empty
-    for node in cfg.nodes {
-      guard node != cfg.end else { continue }
-      edges[node] = []
-      reverseEdges[node] = []
+    let nodes = cfg.nodes.filter {
+      // Nothing is control or data dependent on the END node, do not include it
+      $0 != cfg.end
     }
 
-    // Build the postdominator tree
-    let pdStartTime = NSDate().timeIntervalSince1970
-    let postdominatorTree = buildImmediatePostdominatorTree(cfg: cfg)
-    let pdDuration = NSDate().timeIntervalSince1970 - pdStartTime
-    print("Built postdominator tree in: \(pdDuration)")
-
-    // Cache the references and definitions
-    let refDefStartTime = NSDate().timeIntervalSince1970
-    for node in cfg.nodes {
-      _ = node.definitions
-      _ = node.references
-    }
-    let refDefDuration = NSDate().timeIntervalSince1970 - refDefStartTime
-    print("Ref def time: \(refDefDuration)")
-
-    // Find the set of reaching definitions
-    let rdStartTime = NSDate().timeIntervalSince1970
-    let ordering = flowOrdering(ofCFG: cfg, withPostdominatorTree: postdominatorTree)
-    let reachingDefinitions = findReachingDefinitions(inCFG: cfg, nodeOrdering: ordering)
-    let rdDuration = NSDate().timeIntervalSince1970 - rdStartTime
-    print("Found reaching defs in: \(rdDuration)")
-
-    var controlDepTime: TimeInterval = 0
-    var dataDepTime: TimeInterval = 0
-
-    for node in cfg.nodes {
-      // Nothing is control or data dependent on the end node,
-      // Do not include it in the PDG
-      guard node != cfg.end else { continue }
-      nodes.insert(node)
-
-      let cdStart = NSDate().timeIntervalSince1970
-
-      let controlDependents = findControlDependents(
-        of: node,
-        inCFG: cfg,
-        withPostdominatorTree: postdominatorTree
-      )
-
-      for controlDependent in controlDependents {
-        edges[node]!.insert(.control(controlDependent))
-        reverseEdges[controlDependent]!.insert(.control(node))
-      }
-
-      let ddStart = NSDate().timeIntervalSince1970
-      let dataDependencies = findDataDependencies(of: node, inCFG: cfg, withReachingDefinitions: reachingDefinitions)
-
-      for dataDependency in dataDependencies {
-        edges[dataDependency]!.insert(.data(node))
-        reverseEdges[node]!.insert(.data(dataDependency))
-      }
-
-      let ddEnd = NSDate().timeIntervalSince1970
-      controlDepTime += ddStart - cdStart
-      dataDepTime += ddEnd - ddStart
-    }
-    print("Control dep time: \(controlDepTime)")
-    print("Data dep time: \(dataDepTime)")
+    let controlDeps = controlDependencyEdges(cfg: cfg)
+    let dataDeps = dataDependencyEdges(cfg: cfg)
+    let edges = controlDeps.forward.merging(dataDeps.forward) { $0.union($1) }
+    let reverseEdges = controlDeps.reverse.merging(dataDeps.reverse) { $0.union($1) }
     
     self.nodes = nodes
     self.edges = edges

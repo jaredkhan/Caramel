@@ -2,7 +2,7 @@ import XCTest
 import Source
 @testable import CaramelFramework
 
-class FlowPostdominanceTests: XCTestCase {
+class PostdominanceTests: XCTestCase {
   func testLinearPostDominance() {
     let linearPostDominancePath = "Resources/FlowPostdominanceTests/linearPostdominance.swift"
     let identifier = FileManager.default.currentDirectoryPath + "/" + linearPostDominancePath
