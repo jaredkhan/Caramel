@@ -28,15 +28,18 @@ func controlDependencyEdges(cfg: CompleteCFG) -> (forward: [Node: Set<PDGEdge>],
   return (forward: edges, reverse: reverseEdges)
 }
 
-/// Returns the set of nodes including the source and the sink along the path from source to sink
+/// Returns the set of nodes including the head of all edges along the path from source to sink
 /// If the given sink is not in the path from source to the end node, then return the path to the end node
 /// Since this is a tree, this path is unique
 private func path(from source: Node, to sink: Node, inPostDominatorTree postdominatorTree: [Node: Node]) -> Set<Node> {
+  guard source != sink else { return [] }
   var includedNodes: Set<Node> = [source]
   var prevNode = source
-  while let nextNode = postdominatorTree[prevNode], nextNode != prevNode, prevNode != sink {
-    includedNodes.insert(nextNode)
-    prevNode = nextNode
+  while let node = postdominatorTree[prevNode] {
+    guard node != sink else { break }
+    guard node != prevNode else { break } // We're not at the END node
+    includedNodes.insert(node)
+    prevNode = node
   }
   return includedNodes
 }
@@ -47,7 +50,5 @@ public func findControlDependents(of startPoint: Node, inCFG cfg: CompleteCFG, w
     path(from: child, to: immediatePostdominator, inPostDominatorTree: postdominatorTree)
   }
   let allPostdominators: Set<Node> = childPostdominators.reduce([], { $0.union($1) })
-  let commonPostdominators: Set<Node> = childPostdominators.reduce(childPostdominators.first ?? [], { $0.intersection($1) })
-
-  return allPostdominators.subtracting(commonPostdominators)
+  return allPostdominators
 }
