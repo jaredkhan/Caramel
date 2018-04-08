@@ -24,7 +24,7 @@ struct NodeOrdering {
   }
 
   public func areInIncreasingOrder(_ lhs: Node, _ rhs: Node) -> Bool {
-    return index(for: lhs) < index(for: rhs)
+    return index(for: lhs) > index(for: rhs)
   }
 
   public var description: String {
