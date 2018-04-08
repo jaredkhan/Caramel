@@ -21,8 +21,12 @@ func dataDependencyEdges(cfg: CompleteCFG) -> (forward: [Node: Set<PDGEdge>], re
   let refDefDuration = NSDate().timeIntervalSince1970 - refDefStartTime
   print("Ref def time: \(refDefDuration)")
 
+  let postdominatorTree = buildImmediatePostdominatorTree(cfg: cfg)
+  let ordering = flowOrdering(ofCFG: cfg, withPostdominatorTree: postdominatorTree)
+  let reachingDefinitions = findReachingDefinitions(inCFG: cfg, nodeOrdering: ordering)
+
   for node in cfg.nodes {
-    let dataDependencies = findDataDependencies(of: node, inCFG: cfg)
+    let dataDependencies = findDataDependencies(of: node, inCFG: cfg, reachingDefinitions: reachingDefinitions)
 
     for dataDependency in dataDependencies {
       edges[dataDependency]!.insert(.data(node))
@@ -104,10 +108,7 @@ private func findReachingDefinitions(inCFG cfg: CompleteCFG, nodeOrdering: NodeO
   return reachIn
 }
 
-private func findDataDependencies(of node: Node, inCFG cfg: CompleteCFG) -> Set<Node> {
-  let postdominatorTree = buildImmediatePostdominatorTree(cfg: cfg)
-  let ordering = flowOrdering(ofCFG: cfg, withPostdominatorTree: postdominatorTree)
-  let reachingDefinitions = findReachingDefinitions(inCFG: cfg, nodeOrdering: ordering)
+private func findDataDependencies(of node: Node, inCFG cfg: CompleteCFG, reachingDefinitions: [Node: Set<Definition>]) -> Set<Node> {
   return Set(reachingDefinitions[node]!.filter { definition in
     node.references.contains(definition.usr)
   }.map { definition in definition.node })
