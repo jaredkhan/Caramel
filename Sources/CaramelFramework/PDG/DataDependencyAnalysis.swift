@@ -24,10 +24,9 @@ func dataDependencyEdges(cfg: CompleteCFG) -> (forward: [Node: Set<PDGEdge>], re
   let postdominatorTree = buildImmediatePostdominatorTree(cfg: cfg)
   let ordering = flowOrdering(ofCFG: cfg, withPostdominatorTree: postdominatorTree)
   let reachingDefinitions = findReachingDefinitions(inCFG: cfg, nodeOrdering: ordering)
-
+  
   for node in cfg.nodes {
     let dataDependencies = findDataDependencies(of: node, inCFG: cfg, reachingDefinitions: reachingDefinitions)
-
     for dataDependency in dataDependencies {
       edges[dataDependency]!.insert(.data(node))
       reverseEdges[node]!.insert(.data(dataDependency))
@@ -84,9 +83,10 @@ private func findReachingDefinitions(inCFG cfg: CompleteCFG, nodeOrdering: NodeO
     findTime += NSDate().timeIntervalSince1970 - findStartTime
 
     let predecessors = cfg.reverseEdges[node] ?? []
-    let currentReachIn: Set<Definition> = predecessors.reduce([], { acc, predecessor in
-      acc.union(reachOut[predecessor]!)
-    })
+    var currentReachIn: Set<Definition> = []
+    for predecessor in predecessors {
+      currentReachIn.formUnion(reachOut[predecessor]!)
+    }
 
     let oldOut = reachOut[node]!
     
@@ -113,60 +113,3 @@ private func findDataDependencies(of node: Node, inCFG cfg: CompleteCFG, reachin
     node.references.contains(definition.usr)
   }.map { definition in definition.node })
 }
-
-// /// Find the data dependents of a given node in a given CFG
-// /// Performs a BFS for each definition in the given node
-// /// Complexity: O(|E|d)
-// /// where |E| is the number of edges in the CFG,
-// /// d is the number of definitions in the given node
-// public func findDataDependents(of startPoint: Node, inCFG cfg: CompleteCFG) -> Set<Node> {
-//   var dependents = Set<Node>()
-//   var enqueueCount = 0
-
-//   let defTimeStart = NSDate().timeIntervalSince1970
-//   let definitions = startPoint.definitions
-//   refDefRetrievalTime += NSDate().timeIntervalSince1970 - defTimeStart
-
-//   for definitionUSR in definitions {
-//     let ddSearchStart = NSDate().timeIntervalSince1970
-//     var expansionQueue = Queue<Node>()
-//     var visitedNodes = Set<Node>()
-
-//     for nextNode in cfg.edges[startPoint] ?? [] {
-//       expansionQueue.enqueue(nextNode)
-//     }
-
-//     while let currentNode = expansionQueue.dequeue() {
-//       visitedNodes.insert(currentNode)
-
-//       let refTimeStart = NSDate().timeIntervalSince1970
-//       let references = currentNode.references
-//       refDefRetrievalTime += NSDate().timeIntervalSince1970 - refTimeStart
-
-//       // If I reference the definition, add me to the dependents
-//       if references.contains(definitionUSR) {
-//         dependents.insert(currentNode)
-//       }
-
-//       let innerDefStartTime = NSDate().timeIntervalSince1970
-//       let innerDefinitions = currentNode.definitions
-//       refDefRetrievalTime += NSDate().timeIntervalSince1970 - innerDefStartTime
-
-//       // If I redefine the definition, do not visit my children
-//       guard !innerDefinitions.contains(definitionUSR) else { continue }
-
-//       // Enqueue all my children that haven't been seen already
-//       for nextNode in cfg.edges[currentNode] ?? [] {
-//         if !visitedNodes.contains(nextNode) {
-//           expansionQueue.enqueue(nextNode)
-//           enqueueCount += 1
-//         }
-//       }
-//     }
-//     let ddSearchDuration = NSDate().timeIntervalSince1970 - ddSearchStart
-//     print("DD search completed in: \(ddSearchDuration)")
-//     print("DD search enqueued: \(enqueueCount)")
-//   }
-
-//   return dependents
-// }
