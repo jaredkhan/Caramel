@@ -49,9 +49,10 @@ public struct LineColumnResolver {
 
   /// Takes a line and column number and returns a byte offset to that position
   /// Throws if the position does not exist in the file
+  /// Allows the offset to be the end of the file but otherwise does not allow columns at the end of a line
   public func resolve(line lineNum: Int, column columnNum: Int) throws -> Int {
     if let line = lines[lineNum] {
-      if 0 < columnNum && columnNum <= line.length {
+      if 0 < columnNum && columnNum <= line.length || (lineNum == lines.count && columnNum == line.length + 1) {
         return line.offset + columnNum - 1
       }
     }
