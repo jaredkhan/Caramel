@@ -11,6 +11,15 @@
         }
       },
       {
+        "package": "BracketStructureParser",
+        "repositoryURL": "https://github.com/jaredkhan/BracketStructureParser",
+        "state": {
+          "branch": null,
+          "revision": "45a0f01e010842d5caff2af031699ebade183158",
+          "version": "0.0.1"
+        }
+      },
+      {
         "package": "Clang_C",
         "repositoryURL": "https://github.com/norio-nomura/Clang_C.git",
         "state": {

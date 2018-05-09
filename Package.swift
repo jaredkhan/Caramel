@@ -9,7 +9,12 @@ let package = Package(
         // Products define the executables and libraries produced by a package, and make them visible to other packages.
         .executable(
             name: "Caramel",
-            targets: ["Caramel"]),
+            targets: ["Caramel"]
+        ),
+        .executable(
+            name: "CaramelCorpusAnalyser",
+            targets: ["CaramelCorpusAnalyser"]
+        ),
         .library(
             name: "CaramelFramework",
             targets: ["CaramelFramework"]
@@ -20,21 +25,27 @@ let package = Package(
         .package(url: "https://github.com/kareman/SwiftShell.git", from: "4.0.0"),
         .package(url: "https://github.com/jpsim/SourceKitten.git", from: "0.18.1"),
         .package(url: "https://github.com/yanagiba/swift-ast.git", from: "0.3.1"),
-        .package(url: "https://github.com/onevcat/Rainbow", from: "3.0.0")
+        .package(url: "https://github.com/onevcat/Rainbow", from: "3.0.0"),
+        .package(url: "https://github.com/jaredkhan/BracketStructureParser", from: "0.0.1"),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
-        .target(
+      .target(
+        name: "CaramelFramework",
+        dependencies: ["Regex", "SwiftShell", "SourceKittenFramework", "SwiftAST", "BracketStructureParser"]
+      ),
+      .target(
             name: "Caramel",
             dependencies: ["CaramelFramework", "Rainbow"]
         ),
         .target(
-            name: "CaramelFramework",
-            dependencies: ["Regex", "SwiftShell", "SourceKittenFramework", "SwiftAST"]
+            name: "CaramelCorpusAnalyser",
+            dependencies: ["CaramelFramework", "SwiftShell", "BracketStructureParser", "SourceKittenFramework"]
         ),
         .testTarget(
             name: "CaramelFrameworkTests",
-            dependencies: ["CaramelFramework"]),
+            dependencies: ["CaramelFramework"]
+        )
     ]
 )
