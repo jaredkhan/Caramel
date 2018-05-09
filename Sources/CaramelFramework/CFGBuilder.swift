@@ -54,18 +54,65 @@ func getCFG(_ stmt: Statement) -> PartialCFG {
         edges: [node: [.continueStatement]],
         entryPoint: .node(node)
       )
-    case let n as DeferStatement: 
-      let node = Node(range: n.sourceRange, type: .breakStatement)
-      return PartialCFG(
-        nodes: [node],
-        edges: [node: [.breakStatement]],
-        entryPoint: .node(node)
-      )
+    // case let n as DeferStatement: 
+    //   let node = Node(range: n.sourceRange, type: .breakStatement)
+    //   return PartialCFG(
+    //     nodes: [node],
+    //     edges: [node: [.breakStatement]],
+    //     entryPoint: .node(node)
+    //   )
     case let n as FallthroughStatement: 
       let node = Node(range: n.sourceRange, type: .fallthroughStatement)
       return PartialCFG(
         nodes: [node],
         edges: [node: [.switchFallthrough]],
+        entryPoint: .node(node)
+      )
+    case let n as ImportDeclaration:
+      let node = Node(range: n.sourceRange, type: .declaration)
+      return PartialCFG(
+        nodes: [node],
+        edges: [node: [.passiveNext]],
+        entryPoint: .node(node)
+      )
+    case let n as ExtensionDeclaration:
+      let memberCFGs = n.members.map { (member: ExtensionDeclaration.Member) -> PartialCFG in 
+        switch member {
+          case .declaration(let d): return getCFG(d)
+          case .compilerControl(let c): return getCFG(c)
+        }
+      }
+      return PartialCFG(
+        chainingCFGs: memberCFGs,
+        withContext: { (currentCfg: PartialCFG, nextCfg: PartialCFG?) in
+          [
+            .passiveNext: nextCfg?.entryPoint ?? .passiveNext
+          ]
+        }
+      )
+    case let n as FunctionDeclaration:
+      guard let body = n.body else { fatalError("Functions must have bodies") }
+      // Hack - the range of the signature is the range from the start of the function to the start of the body
+      let signatureNode = Node(
+        range: SourceRange(
+          start: n.sourceRange.start,
+          end: body.sourceRange.start
+        ),
+        type: .functionSignature
+      )
+      let bodyCFG = getCFG(body).applying(context: [
+        .returnStatement: .passiveNext
+      ])
+      return PartialCFG(
+        nodes: [signatureNode],
+        edges: [signatureNode: [bodyCFG.entryPoint]],
+        entryPoint: .node(signatureNode)
+      ).merging(with: bodyCFG)
+    case let n as ReturnStatement:
+      let node = Node(range: n.sourceRange, type: .returnStatement)
+      return PartialCFG(
+        nodes: [node],
+        edges: [node: [.returnStatement]],
         entryPoint: .node(node)
       )
     case let n as ForInStatement: 
@@ -76,16 +123,16 @@ func getCFG(_ stmt: Statement) -> PartialCFG {
       // - Resolve any `break` or `continue` appropriately
       // - When reach the end of the block, go back to the pattern
       let collectionCFG = getCFG(n.collection)
-      var bodyCFG = getCFG(n.codeBlock).applying(context: [
-        .breakStatement: .passiveNext,
-      ])
+      var bodyCFG = getCFG(n.codeBlock)
       let patternCFG = getCFG(n.item.matchingPattern).applying(context: [
         .patternMatch: bodyCFG.entryPoint,
         .patternNotMatch: .passiveNext
       ])
 
       bodyCFG = bodyCFG.applying(context: [
-        .continueStatement: patternCFG.entryPoint
+        .continueStatement: patternCFG.entryPoint,
+        .passiveNext: patternCFG.entryPoint,
+        .breakStatement: .passiveNext
       ])
 
       return collectionCFG.applying(
@@ -230,11 +277,18 @@ func getNode(_ expr: Expression) -> Node {
     case let binaryOp as BinaryOperatorExpression:
       switch binaryOp.binaryOperator {
         // Support the standard library assignment operators
-        case "=", "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", "&=", "|=", "^=": 
+        case "=":
           return Node(
             range: expr.sourceRange,
             type: .expression,
             defRange: binaryOp.leftExpression.sourceRange
+          )
+        case "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", "&=", "|=", "^=": 
+          return Node(
+            range: expr.sourceRange,
+            type: .expression,
+            defRange: binaryOp.leftExpression.sourceRange,
+            defRangeContainsRefs: true
           )
         default:
           return Node(
@@ -302,8 +356,36 @@ func getCFG(_ cond: Condition) -> PartialCFG {
       fatalError("availability conditions not supported")
     case .case(_ , _):
       fatalError("case conditions not supported")
-    case .let(_, _), .var(_, _):
-      fatalError("optional binding not supported")
+    case .let(let pattern, let expression):
+      // Hack - the start point of this range is the start of the pattern, the end point is the end of the expression
+      // Really, this should include the let/var keyword
+      let node = Node(
+        range: SourceRange(start: pattern.sourceRange.start, end: expression.sourceRange.end),
+        type: .condition,
+        defRange: pattern.sourceRange
+      )
+      return PartialCFG(
+        nodes: [node],
+        edges: [
+          node: [.conditionFail, .conditionHold]
+        ],
+        entryPoint: .node(node)
+      )
+    case .var(let pattern, let expression):
+      // Hack - the start point of this range is the start of the pattern, the end point is the end of the expression
+      // Really, this should include the let/var keyword
+      let node = Node(
+        range: SourceRange(start: pattern.sourceRange.start, end: expression.sourceRange.end),
+        type: .condition,
+        defRange: pattern.sourceRange
+      )
+      return PartialCFG(
+        nodes: [node],
+        edges: [
+          node: [.conditionFail, .conditionHold]
+        ],
+        entryPoint: .node(node)
+      )
   }
   return PartialCFG.empty
 }
