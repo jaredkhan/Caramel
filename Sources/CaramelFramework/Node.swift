@@ -12,6 +12,9 @@ public class Node {
   // Whether the items in the def range are also referenced (e.g. "x += 4" where x is both referenced and defined)
   let defRangeContainsRefs: Bool
 
+  var artificialDefinitions: Set<USR> = []
+  var artificialReferences: Set<USR> = []
+
   init(range: SourceRange, type: NodeType, defRange: SourceRange? = nil, defRangeContainsRefs: Bool = false) {
     self.range = range
     self.type = type
@@ -38,7 +41,7 @@ public class Node {
 
     let definitions = defRange.map { try! IdentifierIndex.references(inFile: range.start.identifier, within: $0) } ?? []
     let declarations = try! IdentifierIndex.declarations(inFile: range.start.identifier, within: range)
-    return definitions.union(declarations)
+    return definitions.union(declarations).union(artificialDefinitions)
   }()
 
   /// Lists all the symbols that are referred to in this node
@@ -47,7 +50,11 @@ public class Node {
       return Set<USR>()
     }
 
-    return try! IdentifierIndex.references(inFile: range.start.identifier, within: range, excludingRange: defRangeContainsRefs ? nil : defRange)
+    return try! IdentifierIndex.references(
+      inFile: range.start.identifier,
+      within: range,
+      excludingRange: defRangeContainsRefs ? nil : defRange
+    ).union(artificialReferences)
   }()
 }
 

@@ -1,5 +1,6 @@
 import AST
 import Source
+import Foundation
 
 func getCFG(_ decl: TopLevelDeclaration) -> PartialCFG {
   return getCFG(decl.statements)
@@ -122,9 +123,25 @@ func getCFG(_ stmt: Statement) -> PartialCFG {
       // - If can assign to the pattern, enter the block, otherwise continue
       // - Resolve any `break` or `continue` appropriately
       // - When reach the end of the block, go back to the pattern
-      let collectionCFG = getCFG(n.collection)
+      let sequenceUSR = UUID().uuidString
+      let collectionNode = getNode(n.collection)
+      collectionNode.artificialDefinitions.insert(sequenceUSR)
+      let patternNode = getNode(n.item.matchingPattern)
+      patternNode.artificialReferences.insert(sequenceUSR)
+
+      let collectionCFG = PartialCFG(
+        nodes: [collectionNode],
+        edges: [collectionNode: [.passiveNext]],
+        entryPoint: .node(collectionNode)
+      )
+      
       var bodyCFG = getCFG(n.codeBlock)
-      let patternCFG = getCFG(n.item.matchingPattern).applying(context: [
+
+      let patternCFG = PartialCFG(
+        nodes: [patternNode],
+        edges: [patternNode: [.patternMatch, .patternNotMatch]],
+        entryPoint: .node(patternNode)
+      ).applying(context: [
         .patternMatch: bodyCFG.entryPoint,
         .patternNotMatch: .passiveNext
       ])
@@ -304,6 +321,13 @@ func getNode(_ expr: Expression) -> Node {
   }
 }
 
+func getNode(_ pattern: AST.Pattern) -> Node {
+  return Node(
+    range: pattern.sourceRange,
+    type: .pattern
+  )
+}
+
 // If we are getting the PartialCFG of an Expression directly,
 // then we just want a wrapper that has this expression as an entry point and moves on
 func getCFG(_ expr: Expression) -> PartialCFG {
@@ -324,11 +348,8 @@ func getCFG(_ elseClause: IfStatement.ElseClause) -> PartialCFG {
   }
 }
 
-func getCFG(_ pattern: Pattern) -> PartialCFG {
-  let node = Node(
-    range: pattern.sourceRange,
-    type: .pattern
-  )
+func getCFG(_ pattern: AST.Pattern) -> PartialCFG {
+  let node = getNode(pattern)
   return PartialCFG(
     nodes: [node],
     edges: [
