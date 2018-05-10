@@ -9,11 +9,14 @@ public class Node {
   public let type: NodeType
   // A range, within this node, of symbols being defined (e.g. on the left hand side of an assignment operator)
   let defRange: SourceRange?
+  // Whether the items in the def range are also referenced (e.g. "x += 4" where x is both referenced and defined)
+  let defRangeContainsRefs: Bool
 
-  init(range: SourceRange, type: NodeType, defRange: SourceRange? = nil) {
+  init(range: SourceRange, type: NodeType, defRange: SourceRange? = nil, defRangeContainsRefs: Bool = false) {
     self.range = range
     self.type = type
     self.defRange = defRange
+    self.defRangeContainsRefs = defRangeContainsRefs
   }
 
   // If we are getting the PartialCFG of a Node directly,
@@ -44,7 +47,7 @@ public class Node {
       return Set<USR>()
     }
 
-    return try! IdentifierIndex.references(inFile: range.start.identifier, within: range, excludingRange: defRange)
+    return try! IdentifierIndex.references(inFile: range.start.identifier, within: range, excludingRange: defRangeContainsRefs ? nil : defRange)
   }()
 }
 
@@ -67,6 +70,9 @@ public enum NodeType: Equatable {
   case breakStatement
   case continueStatement
   case fallthroughStatement
+  case returnStatement
+  case functionSignature
+  case declaration
   case pattern
   case repeatWhileCondition
   case functionParameter

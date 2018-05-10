@@ -2,13 +2,15 @@ import Rainbow
 import CaramelFramework
 
 func printSlice(_ slice: Set<Node>, ofFile filePath: String) {
-  // Slices do not overlap
+  // Slice nodes do not overlap
   // Order them by startoffset
   var orderedSliceNodes = slice.sorted {
     let leftOffset = try! $0.range.start.offset()
     let rightOffset = try! $1.range.start.offset()
     return leftOffset > rightOffset
   }
+
+  let maxOffset = try! SnippetGrabber.getMaxOffset(filePath: filePath)
 
   var result = ""
 
@@ -30,6 +32,11 @@ func printSlice(_ slice: Set<Node>, ofFile filePath: String) {
     ))
     currentCoveredOffset = nodeEndOffset
   }
+  result += String(try! SnippetGrabber.get(
+    filePath: filePath,
+    startOffset: currentCoveredOffset,
+    endOffset: maxOffset
+  )).lightBlack
 
   print(result)
 }
