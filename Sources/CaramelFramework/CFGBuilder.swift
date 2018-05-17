@@ -209,10 +209,14 @@ func getCFG(_ stmt: Statement) -> PartialCFG {
       ]))
     case let n as SwitchStatement: 
       let subject = getNode(n.expression)
+      let subjectUSR = UUID().uuidString
+      subject.artificialDefinitions.insert(subjectUSR)
       
+      // All patterns within need to be data dependent on the subject
+
       // get pattern chains and bodies
       var cases = n.cases.map {(
-        patternChainCFG: getPatternChainCFG($0),
+        patternChainCFG: getPatternChainCFG($0, subjectUSR: subjectUSR),
         bodyCFG: getBodyCFG($0)
       )}
 
@@ -421,7 +425,7 @@ func getCFG(_ conds: [Condition]) -> PartialCFG {
   )
 }
 
-func getPatternChainCFG(_ switchCase: SwitchStatement.Case) -> PartialCFG {
+func getPatternChainCFG(_ switchCase: SwitchStatement.Case, subjectUSR: USR) -> PartialCFG {
   switch switchCase {
   case .`case`(let items, _):
     for item in items {
@@ -430,8 +434,15 @@ func getPatternChainCFG(_ switchCase: SwitchStatement.Case) -> PartialCFG {
       }
     }
 
+    let patternCFGs: [PartialCFG] = items.map {
+      let cfg = getCFG($0.pattern)
+      // Hack - tell the patterns that they reference the subject
+      cfg.nodes.first?.artificialReferences.insert(subjectUSR)
+      return cfg
+    }
+
     return PartialCFG(
-      chainingCFGs: items.map { getCFG($0.pattern) },
+      chainingCFGs: patternCFGs,
       withContext: { currentPattern, nextPattern in 
         [
           // If there is another pattern then chain to that one,

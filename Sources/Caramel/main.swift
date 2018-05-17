@@ -19,7 +19,7 @@ print("PDG Node count: \(pdg.nodes.count)")
 print("PDG Edge count: \(pdg.edges.values.reduce(0, { $0 + $1.count }))")
 let graphBuildDuration = NSDate().timeIntervalSince1970 - graphStartTime
 print("Built full graph in: \(graphBuildDuration)")
-outputGraph(dotFormat: completeCFG.graphVizDotFormat())
+// outputGraph(dotFormat: completeCFG.graphVizDotFormat())
 
 print("Enter criterion Line: ")
 let line = Int(readLine()!)!
@@ -27,7 +27,7 @@ let line = Int(readLine()!)!
 print("Enter criterion Column: ")
 let col = Int(readLine()!)!
 
-print(completeCFG.graphVizDotFormat())
+// print(completeCFG.graphVizDotFormat())
 
 let sliceStartTime = NSDate().timeIntervalSince1970
 printSlice(pdg.slice(line: line, column: col)!, ofFile: CommandLine.arguments[1])

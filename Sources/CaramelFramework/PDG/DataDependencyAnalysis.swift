@@ -13,13 +13,13 @@ func dataDependencyEdges(cfg: CompleteCFG) -> (forward: [Node: Set<PDGEdge>], re
   }
 
   // Cache the references and definitions
-  let refDefStartTime = NSDate().timeIntervalSince1970
+  // let refDefStartTime = NSDate().timeIntervalSince1970
   for node in cfg.nodes {
     _ = node.definitions
     _ = node.references
   }
-  let refDefDuration = NSDate().timeIntervalSince1970 - refDefStartTime
-  print("Ref def time: \(refDefDuration)")
+  // let refDefDuration = NSDate().timeIntervalSince1970 - refDefStartTime
+  // print("Ref def time: \(refDefDuration)")
 
   let postdominatorTree = buildImmediatePostdominatorTree(cfg: cfg)
   let ordering = flowOrdering(ofCFG: cfg, withPostdominatorTree: postdominatorTree)
@@ -59,10 +59,10 @@ private func flowOrdering(ofCFG cfg: CompleteCFG, withPostdominatorTree postdomi
 
 /// Worklist algorithm
 private func findReachingDefinitions(inCFG cfg: CompleteCFG, nodeOrdering: NodeOrdering) -> [Node: Set<Definition>] {
-  let queueStartTime = NSDate().timeIntervalSince1970
+  // let queueStartTime = NSDate().timeIntervalSince1970
   var changedNodes = nodeOrdering.priorityQueue
-  let queueBuildTime = NSDate().timeIntervalSince1970 - queueStartTime
-  print("Queue built in: \(queueBuildTime)")
+  // let queueBuildTime = NSDate().timeIntervalSince1970 - queueStartTime
+  // print("Queue built in: \(queueBuildTime)")
 
   var gen: [Node: Set<Definition>] = [:]
 
@@ -76,11 +76,11 @@ private func findReachingDefinitions(inCFG cfg: CompleteCFG, nodeOrdering: NodeO
     reachIn[node] = []
   }
 
-  var findTime: TimeInterval = 0
-  var findStartTime = NSDate().timeIntervalSince1970
+  // var findTime: TimeInterval = 0
+  // var findStartTime = NSDate().timeIntervalSince1970
 
   while let node = changedNodes.pop() {
-    findTime += NSDate().timeIntervalSince1970 - findStartTime
+    // findTime += NSDate().timeIntervalSince1970 - findStartTime
 
     let predecessors = cfg.reverseEdges[node] ?? []
     var currentReachIn: Set<Definition> = []
@@ -93,7 +93,7 @@ private func findReachingDefinitions(inCFG cfg: CompleteCFG, nodeOrdering: NodeO
     let killed = currentReachIn.filter { node.definitions.contains($0.usr) }
     reachOut[node] = currentReachIn.subtracting(killed).union(gen[node]!)
 
-    findStartTime = NSDate().timeIntervalSince1970
+    // findStartTime = NSDate().timeIntervalSince1970
     if reachOut[node] != oldOut {
       for child in cfg.edges[node]! {
         changedNodes.push(child)
@@ -102,8 +102,8 @@ private func findReachingDefinitions(inCFG cfg: CompleteCFG, nodeOrdering: NodeO
 
     reachIn[node] = currentReachIn
   }
-  findTime += NSDate().timeIntervalSince1970 - findStartTime
-  print("Found next nodes in: \(findTime)")
+  // findTime += NSDate().timeIntervalSince1970 - findStartTime
+  // print("Found next nodes in: \(findTime)")
 
   return reachIn
 }
