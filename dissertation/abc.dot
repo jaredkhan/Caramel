@@ -1,0 +1,5 @@
+digraph abc {
+node [shape=box];
+rankdir=LR;
+a->b->c;
+}

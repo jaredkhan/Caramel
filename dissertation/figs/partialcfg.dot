@@ -1,0 +1,13 @@
+digraph G {
+  { 
+    node [width=0.5 shape=box]
+    entry [style=invis label="Entry point"]
+    add [label="sum += x "]
+    cond [label="sum > 20"]
+    passive [style=dashed label="next"]
+    break [style=dashed label="break"]
+  }
+  entry -> add
+  add -> cond
+  cond -> { passive break }
+}

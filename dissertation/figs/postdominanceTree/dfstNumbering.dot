@@ -1,0 +1,13 @@
+digraph G {
+  { 
+    node [width=0.5]
+  }
+  1 -> 2
+  2 -> 3
+  2 -> 5 [style=dashed color=grey]
+  3 -> 6
+  5 -> 4 [style=dashed color=grey]
+  4 -> 5
+  5 -> 6
+  6 -> 7
+}

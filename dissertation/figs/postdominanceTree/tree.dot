@@ -1,0 +1,11 @@
+digraph G {
+  { 
+    node [width=0.5]
+  }
+  A -> B [style=dashed]
+  B -> F [style=dashed]
+  C -> F [style=dashed]
+  D -> F [style=dashed]
+  E -> D [style=dashed]
+  F -> G [style=dashed]
+}

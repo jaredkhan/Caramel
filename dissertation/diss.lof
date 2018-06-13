@@ -1,0 +1,19 @@
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {1.1}{\ignorespaces An example of a program slice\relax }}{10}{figure.caption.8}
+\contentsline {figure}{\numberline {1.2}{\ignorespaces The Swift compilation pipeline.\relax }}{14}{figure.caption.9}
+\contentsline {figure}{\numberline {1.3}{\ignorespaces Two routes to obtaining the sliced LLVM of a Swift source file\relax }}{14}{figure.caption.10}
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {2.1}{\ignorespaces An example of a control flow graph\relax }}{20}{figure.caption.11}
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces The high-level design of \textit {Caramel}, a static program slicer for Swift\relax }}{28}{figure.caption.12}
+\contentsline {figure}{\numberline {3.2}{\ignorespaces An example of a partial CFG\relax }}{29}{figure.caption.13}
+\contentsline {figure}{\numberline {3.3}{\ignorespaces An example of Caramel's CFG construction.\relax }}{31}{figure.caption.14}
+\contentsline {figure}{\numberline {3.4}{\ignorespaces An example of a postdominance tree.\relax }}{34}{figure.caption.15}
+\contentsline {figure}{\numberline {3.5}{\ignorespaces A depth-first traversal postorder numbering of the CFG in \ref {fig:postdominanceTreeCFG}. Dark edges are those in the depth-first spanning tree. Dashed edges are edges from the CFG not in the depth-first search tree. Note that node 7 is the root of this tree, not node 1. Arrows point from a child to its parent.\relax }}{35}{figure.caption.16}
+\contentsline {figure}{\numberline {3.6}{\ignorespaces An algorithm for computing the postdominance tree and frontiers, reproduced from Cooper et al. \cite {SimpleDom}\relax }}{39}{figure.caption.17}
+\contentsline {figure}{\numberline {3.7}{\ignorespaces An example slicing output from Caramel with (line: 13, column: 7) as the criterion.\relax }}{40}{figure.caption.18}
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Results from the Caramel test suite\relax }}{42}{figure.caption.19}
+\contentsline {figure}{\numberline {4.2}{\ignorespaces The time taken to slice a file against the number of generated PDG nodes for that file.\relax }}{44}{figure.caption.20}
+\addvspace {10\p@ }
+\addvspace {10\p@ }

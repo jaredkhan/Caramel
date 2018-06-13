@@ -1,0 +1,129 @@
+\begin{thebibliography}{10}
+
+\bibitem{AgrawalInter}
+Hiralal Agrawal, Richard~A. DeMillo, and Eugene~H. Spafford.
+\newblock Dynamic slicing in the presence of unconstrained pointers.
+\newblock In {\em Proceedings of the Symposium on Testing, Analysis, and
+  Verification}, TAV4, pages 60--73, New York, NY, USA, 1991. ACM.
+
+\bibitem{Barth}
+Jeffrey~M. Barth.
+\newblock A practical interprocedural data flow analysis algorithm.
+\newblock {\em Commun. ACM}, 21(9):724--736, September 1978.
+
+\bibitem{dg}
+Marek Chalupa.
+\newblock Slicing of llvm bitcode.
+\newblock Master's thesis, Masaryk University, 2016.
+
+\bibitem{SimpleDom}
+Keith Cooper, Timothy Harvey, and Ken Kennedy.
+\newblock A simple, fast dominance algorithm.
+\newblock {\em Software Practice and Experience}, 01 2006.
+
+\bibitem{FerranteOpt}
+Jeanne Ferrante, Karl~J. Ottenstein, and Joe~D. Warren.
+\newblock The program dependence graph and its use in optimization.
+\newblock {\em ACM Trans. Program. Lang. Syst.}, 9(3):319--349, July 1987.
+
+\bibitem{Harman97}
+Mark Harman and Sebastian Danicic.
+\newblock Amorphous program slicing.
+\newblock In {\em Proceedings of the 5th International Workshop on Program
+  Comprehension (WPC '97)}, WPC '97, pages 70--, Washington, DC, USA, 1997.
+  IEEE Computer Society.
+
+\bibitem{HorwitzSE}
+Susan Horwitz and Thomas Reps.
+\newblock The use of program dependence graphs in software engineering.
+\newblock In {\em Proceedings of the 14th International Conference on Software
+  Engineering}, ICSE '92, pages 392--411, New York, NY, USA, 1992. ACM.
+
+\bibitem{HorwitzInter}
+Susan Horwitz, Thomas Reps, and David Binkley.
+\newblock Interprocedural slicing using dependence graphs.
+\newblock {\em ACM Trans. Program. Lang. Syst.}, 12(1):26--60, January 1990.
+
+\bibitem{JiangPoint}
+J.~Jiang, X.~Zhou, and D.~J. Robson.
+\newblock Program slicing for c-the problems in implementation.
+\newblock In {\em Proceedings. Conference on Software Maintenance 1991}, pages
+  182--190, Oct 1991.
+
+\bibitem{KamUllman}
+John~B. Kam and Jeffrey~D. Ullman.
+\newblock Global data flow analysis and iterative algorithms.
+\newblock {\em J. ACM}, 23(1):158--171, January 1976.
+
+\bibitem{EmpiricalFortran}
+Donald~E. Knuth.
+\newblock An empirical study of fortran programs.
+\newblock {\em Software: Practice and Experience}, 1(2):105--133, 1971.
+
+\bibitem{BetterSlicing}
+Sumit Kumar and Susan Horwitz.
+\newblock Better slicing of programs with jumps and switches.
+\newblock In Ralf-Detlef Kutsche and Herbert Weber, editors, {\em Fundamental
+  Approaches to Software Engineering}, pages 96--112, Berlin, Heidelberg, 2002.
+  Springer Berlin Heidelberg.
+
+\bibitem{LengTar79}
+Thomas Lengauer and Robert~Endre Tarjan.
+\newblock A fast algorithm for finding dominators in a flowgraph.
+\newblock {\em ACM Trans. Program. Lang. Syst.}, 1(1):121--141, January 1979.
+
+\bibitem{LowryMedlock}
+Edward~S. Lowry and C.~W. Medlock.
+\newblock Object code optimization.
+\newblock {\em Commun. ACM}, 12(1):13--22, January 1969.
+
+\bibitem{OffnerNotes}
+Carl~D. Offner.
+\newblock Notes on graph algorithms used in optimizing compilers.
+\newblock March 2013.
+
+\bibitem{OttBieman}
+L.M. Ott and James M.~Bieman.
+\newblock Program slices as an abstraction for cohesion measurement.
+\newblock {\em Information and Software Technology}, 40:691--699, 12 1998.
+
+\bibitem{swift-ast}
+Ryuichi Sai.
+\newblock swift-ast.
+\newblock \url{https://github.com/yanagiba/swift-ast}, 2018.
+
+\bibitem{Steenkamp}
+Shaun Steenkamp.
+\newblock Program slicing at debug time.
+\newblock Master's thesis, University of Cambridge, 2017.
+
+\bibitem{StructuredDesign}
+W.~P. Stevens, G.~J. Myers, and L.~L. Constantine.
+\newblock Structured design.
+\newblock {\em IBM Syst. J.}, 13(2):115--139, June 1974.
+
+\bibitem{Tip94}
+Frank Tip.
+\newblock A survey of program slicing techniques.
+\newblock Technical report, CWI (Centre for Mathematics and Computer Science),
+  Amsterdam, The Netherlands, The Netherlands, 1994.
+
+\bibitem{Weiser81}
+Mark Weiser.
+\newblock Program slicing.
+\newblock In {\em Proceedings of the 5th International Conference on Software
+  Engineering}, ICSE '81, pages 439--449, Piscataway, NJ, USA, 1981. IEEE
+  Press.
+
+\bibitem{WeiserProg}
+Mark Weiser.
+\newblock Programmers use slices when debugging.
+\newblock {\em Commun. ACM}, 25(7):446--452, July 1982.
+
+\bibitem{Weiser79}
+Mark~David Weiser.
+\newblock {\em Program Slices: Formal, Psychological, And Practical
+  Investigations Of An Automatic Program Abstraction Method}.
+\newblock PhD thesis, The University of Michigan, 1979.
+
+\end{thebibliography}

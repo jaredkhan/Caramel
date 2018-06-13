@@ -1,0 +1,16 @@
+digraph G {
+  { 
+    node [width=0.5 shape=box]
+    entry [style=invis label="Entry point"]
+    seq [label="myArray"]
+    id [label="x"]
+    add [label="sum += x "]
+    cond [label="sum > 20"]
+    passive [style=dashed label="next"]
+  }
+  entry -> seq
+  seq -> id
+  id -> { add passive }
+  add -> cond
+  cond -> { id passive }
+}

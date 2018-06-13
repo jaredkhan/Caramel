@@ -1,0 +1,48 @@
+This is BibTeX, Version 0.99d (TeX Live 2017)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: diss.aux
+The style file: plain.bst
+Database file #1: refs.bib
+Warning--empty note in OffnerNotes
+You've used 23 entries,
+            2118 wiz_defined-function locations,
+            670 strings with 7374 characters,
+and the built_in function-call counts, 7475 in all, are:
+= -- 784
+> -- 277
+< -- 6
++ -- 116
+- -- 86
+* -- 503
+:= -- 1233
+add.period$ -- 74
+call.type$ -- 23
+change.case$ -- 111
+chr.to.int$ -- 0
+cite$ -- 24
+duplicate$ -- 298
+empty$ -- 600
+format.name$ -- 86
+if$ -- 1589
+int.to.chr$ -- 0
+int.to.str$ -- 23
+missing$ -- 17
+newline$ -- 118
+num.names$ -- 48
+pop$ -- 93
+preamble$ -- 1
+purify$ -- 88
+quote$ -- 0
+skip$ -- 224
+stack$ -- 0
+substring$ -- 513
+swap$ -- 68
+text.length$ -- 6
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 92
+warning$ -- 1
+while$ -- 82
+width$ -- 25
+write$ -- 266
+(There was 1 warning)
